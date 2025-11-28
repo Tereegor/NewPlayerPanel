@@ -1,0 +1,18 @@
+min-hours: 8
+restrictions:
+  place-tnt:
+    enabled: true
+    min-hours: 8
+
+  use-fireball:
+    enabled: true
+    min-hours: 8
+  
+  use-flint-and-steel:
+    enabled: true
+    min-hours: 8
+  
+  use-tnt-minecart:
+    enabled: true
+    min-hours: 8
+

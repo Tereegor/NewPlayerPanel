@@ -1,0 +1,66 @@
+api-version: 1.21
+name: NewPlayerPanel
+version: 1.0.0
+main: newplayerpanel.NewPlayerPanel
+author: Math_Tereegor
+description: Admin panel plugin for player management
+
+commands:
+  villagerhistory:
+    description: Просмотр истории убийств жителей с возможностью поиска по игроку и координатам
+    usage: |
+      /villagerhistory - все записи
+      /villagerhistory <игрок> - записи игрока
+      /villagerhistory <x> <y> <z> - записи по координатам (±2 блок)
+      /villagerhistory <игрок> <x> <y> <z> - комбинированный поиск
+    permission: newplayerpanel.history
+    permission-message: У вас нет прав для использования этой команды!
+  restrict:
+    description: Временно ограничить игрока
+    usage: /restrict <игрок> <ограничение> <время в секундах>
+    permission: newplayerpanel.restrictions.restrict
+    permission-message: У вас нет прав для использования этой команды!
+  unrestrict:
+    description: Снять ограничение с игрока
+    usage: /unrestrict <игрок> <ограничение|all>
+    permission: newplayerpanel.restrictions.restrict
+    permission-message: У вас нет прав для использования этой команды!
+  restrictions:
+    description: Просмотр активных ограничений игрока
+    usage: /restrictions [игрок]
+    permission: newplayerpanel.restrictions.view
+    permission-message: У вас нет прав для использования этой команды!
+  tntprotection:
+    description: Управление TNT Protection
+    usage: |
+      /tntprotection - справка
+      /tntprotection time [игрок] - показать время игрока
+      /tntprotection settings - показать настройки
+      /tntprotection reload - перезагрузить конфигурацию
+    aliases: [tnt]
+    permission: newplayerpanel.tntprotection.manage
+    permission-message: У вас нет прав для использования этой команды!
+
+permissions:
+  newplayerpanel.history:
+    description: Позволяет просматривать историю убийств жителей
+    default: op
+  newplayerpanel.notify:
+    description: Получать уведомления о смерти жителей с открытыми торгами
+    default: false
+  newplayerpanel.restrictions.bypass:
+    description: Обход всех ограничений из restrictions.yml
+    default: op
+  newplayerpanel.restrictions.restrict:
+    description: Возможность применять временные ограничения к игрокам
+    default: op
+  newplayerpanel.restrictions.view:
+    description: Просмотр активных ограничений игроков
+    default: op
+  newplayerpanel.tntprotection.bypass:
+    description: Обход ограничений TNT Protection
+    default: op
+  newplayerpanel.tntprotection.manage:
+    description: Управление TNT Protection
+    default: op
+

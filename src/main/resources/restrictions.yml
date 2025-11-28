@@ -1,0 +1,41 @@
+restrictions:
+  # Ограничение на урон жителям
+  - name: villager_hit_restriction
+    type: ENTITY
+    actions: DAMAGE
+    entity: [minecraft:villager]
+    time: 0
+    default: true
+  
+  # Разрешение на размещение TNT
+  - name: tnt_place_restriction
+    type: ITEM
+    actions: USE
+    item: [minecraft:tnt]
+    time: -1
+    default: false
+  
+  # Разрешение на использование огнива
+  - name: tnt_flint_restriction
+    type: ITEM
+    actions: USE
+    item: [minecraft:flint_and_steel]
+    time: -1
+    default: false
+  
+  # Разрешение на использование огненного шара
+  - name: tnt_fireball_restriction
+    type: ITEM
+    actions: USE
+    item: [minecraft:fire_charge]
+    time: -1
+    default: false
+  
+  # Разрешение на использование вагонетки с TNT
+  - name: tnt_minecart_restriction
+    type: ITEM
+    actions: USE
+    item: [minecraft:tnt_minecart]
+    time: -1
+    default: false
+

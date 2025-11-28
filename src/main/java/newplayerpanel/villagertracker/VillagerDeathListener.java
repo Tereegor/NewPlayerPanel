@@ -1,0 +1,93 @@
+package newplayerpanel.villagertracker;
+
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Villager;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.MerchantRecipe;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class VillagerDeathListener implements Listener {
+    
+    private final VillagerDataManager dataManager;
+    
+    public VillagerDeathListener(JavaPlugin plugin, VillagerDataManager dataManager) {
+        this.dataManager = dataManager;
+    }
+    
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onVillagerDeath(EntityDeathEvent event) {
+        if (!(event.getEntity() instanceof Villager)) {
+            return;
+        }
+        
+        Villager villager = (Villager) event.getEntity();
+        
+        Player killer = villager.getKiller();
+        if (killer == null) {
+            return;
+        }
+        
+        boolean hasTraded = false;
+        
+        for (MerchantRecipe recipe : villager.getRecipes()) {
+            if (recipe.getUses() > 0) {
+                hasTraded = true;
+                break;
+            }
+        }
+        
+        if (!hasTraded) {
+            return;
+        }
+        
+        String villagerType;
+        if (villager.getType() != org.bukkit.entity.EntityType.VILLAGER) {
+            villagerType = villager.getType().getKey().getKey();
+        } else {
+            villagerType = villager.getProfession().getKey().getKey();
+        }
+        
+        String world = villager.getWorld().getName();
+        double x = villager.getLocation().getX();
+        double y = villager.getLocation().getY();
+        double z = villager.getLocation().getZ();
+        
+        Map<String, Integer> enchantments = new HashMap<>();
+        
+        for (ItemStack item : villager.getInventory().getContents()) {
+            if (item != null && item.hasItemMeta() && item.getItemMeta().hasEnchants()) {
+                item.getItemMeta().getEnchants().forEach((enchant, level) -> {
+                    String enchantName = enchant.getKey().getKey();
+                    enchantments.put(enchantName, level);
+                });
+            }
+        }
+        
+        VillagerDeathRecord record = new VillagerDeathRecord(
+            killer.getName(),
+            villagerType,
+            world,
+            x, y, z,
+            enchantments
+        );
+        
+        dataManager.addRecord(record);
+        
+        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+            if (onlinePlayer.hasPermission("newplayerpanel.villagertracker.notify")) {
+                onlinePlayer.sendMessage("§c[VillagerTracker] §fИгрок §e" + killer.getName() + 
+                    " §fубил жителя типа §b" + villagerType + 
+                    " §fв мире §a" + world + 
+                    " §fпо координатам §7" + String.format("%.0f, %.0f, %.0f", x, y, z));
+            }
+        }
+    }
+}
