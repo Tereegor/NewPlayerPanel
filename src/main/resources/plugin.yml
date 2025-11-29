@@ -1,66 +1,54 @@
-api-version: 1.21
+api-version: '1.20'
 name: NewPlayerPanel
-version: 1.0.0
+version: 2.0.0
 main: newplayerpanel.NewPlayerPanel
 author: Math_Tereegor
 description: Admin panel plugin for player management
 
 commands:
-  villagerhistory:
-    description: Просмотр истории убийств жителей с возможностью поиска по игроку и координатам
+  history:
+    description: View villager death history with search by player and coordinates
     usage: |
-      /villagerhistory - все записи
-      /villagerhistory <игрок> - записи игрока
-      /villagerhistory <x> <y> <z> - записи по координатам (±2 блок)
-      /villagerhistory <игрок> <x> <y> <z> - комбинированный поиск
+      /history - all records
+      /history <player> - player records
+      /history <x> <y> <z> - records by coordinates (±2 blocks)
+      /history coords - records at your coordinates
+      /history <player> <x> <y> <z> - combined search
+      /history clear <time> - clear old records (7d, 30d, 1h...)
     permission: newplayerpanel.history
-    permission-message: У вас нет прав для использования этой команды!
+    permission-message: You don't have permission to use this command!
   restrict:
-    description: Временно ограничить игрока
-    usage: /restrict <игрок> <ограничение> <время в секундах>
+    description: Temporarily restrict a player
+    usage: /restrict <player> <restriction> <time>
     permission: newplayerpanel.restrictions.restrict
-    permission-message: У вас нет прав для использования этой команды!
+    permission-message: You don't have permission to use this command!
   unrestrict:
-    description: Снять ограничение с игрока
-    usage: /unrestrict <игрок> <ограничение|all>
+    description: Remove restriction from a player
+    usage: /unrestrict <player> <restriction|all>
     permission: newplayerpanel.restrictions.restrict
-    permission-message: У вас нет прав для использования этой команды!
+    permission-message: You don't have permission to use this command!
   restrictions:
-    description: Просмотр активных ограничений игрока
-    usage: /restrictions [игрок]
+    description: View active restrictions for a player
+    usage: /restrictions [player]
     permission: newplayerpanel.restrictions.view
-    permission-message: У вас нет прав для использования этой команды!
-  tntprotection:
-    description: Управление TNT Protection
-    usage: |
-      /tntprotection - справка
-      /tntprotection time [игрок] - показать время игрока
-      /tntprotection settings - показать настройки
-      /tntprotection reload - перезагрузить конфигурацию
-    aliases: [tnt]
-    permission: newplayerpanel.tntprotection.manage
-    permission-message: У вас нет прав для использования этой команды!
+    permission-message: You don't have permission to use this command!
 
 permissions:
   newplayerpanel.history:
-    description: Позволяет просматривать историю убийств жителей
+    description: Allows viewing villager death history
+    default: op
+  newplayerpanel.history.clear:
+    description: Allows clearing villager death history
     default: op
   newplayerpanel.notify:
-    description: Получать уведомления о смерти жителей с открытыми торгами
-    default: false
+    description: Receive notifications about traded villager deaths
+    default: op
   newplayerpanel.restrictions.bypass:
-    description: Обход всех ограничений из restrictions.yml
+    description: Bypass all restrictions from restrictions.yml
     default: op
   newplayerpanel.restrictions.restrict:
-    description: Возможность применять временные ограничения к игрокам
+    description: Ability to apply temporary restrictions to players
     default: op
   newplayerpanel.restrictions.view:
-    description: Просмотр активных ограничений игроков
+    description: View active player restrictions
     default: op
-  newplayerpanel.tntprotection.bypass:
-    description: Обход ограничений TNT Protection
-    default: op
-  newplayerpanel.tntprotection.manage:
-    description: Управление TNT Protection
-    default: op
-

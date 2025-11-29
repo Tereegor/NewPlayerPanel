@@ -1,0 +1,75 @@
+# Russian translations / Русские переводы
+# Эти сообщения будут загружены в базу данных при первом запуске
+
+messages:
+  # General
+  no-permission: "&cУ вас нет прав для использования этой команды!"
+  player-not-found: "&cИгрок не найден!"
+  player-only: "&cЭта команда может быть использована только игроком!"
+  invalid-number: "&cНеверный формат числа!"
+  reload-success: "&aКонфигурация перезагружена!"
+  
+  # Time formatting
+  time-permanent: "перманентно"
+  time-seconds: "{time} сек"
+  time-minutes: "{time} мин"
+  time-hours: "{hours} ч {minutes} мин"
+  time-days: "{days} д {hours} ч"
+  
+  # Restrictions
+  restrictions-no-active: "&7Нет активных ограничений."
+  restrictions-header: "&6=== Ограничения: {player} ==="
+  restrictions-entry: "&7- &e{restriction} &7(&f{time}&7)"
+  restrictions-not-found: "&cОграничение не найдено!"
+  restrictions-usage: "&cИспользование: /restrict <игрок> <ограничение> <время>"
+  restrictions-usage-time: "&70 = снять, -1 = перманентно, >0 = время в секундах"
+  restrictions-applied: "&aОграничение применено: {time}"
+  restrictions-removed: "&aОграничение снято с {player}"
+  restrictions-removed-all: "&aВсе ограничения сняты."
+  restrictions-notify-applied: "&c[NewPlayerPanel] Ограничение: {restriction} ({time})"
+  restrictions-notify-removed: "&a[NewPlayerPanel] С вас снято ограничение: {restriction}"
+  restrictions-notify-removed-all: "&a[NewPlayerPanel] Все ваши ограничения были сняты."
+  restrictions-blocked-damage: "&cВы не можете наносить урон. Осталось: {time}"
+  restrictions-blocked-item: "&cИспользование этого предмета ограничено. Осталось: {time}"
+  restrictions-blocked-drop: "&cВы не можете выбрасывать этот предмет. Осталось: {time}"
+  restrictions-blocked-command: "&cЭта команда ограничена. Осталось: {time}"
+  
+  # Villager Tracker
+  tracker-header-all: "&6=== История всех убийств жителей ==="
+  tracker-header-player: "&6=== История убийств жителей игрока: {player} ==="
+  tracker-header-coords: "&6=== Убийства жителей в радиусе ±2 блок от координат {coords} ==="
+  tracker-header-combined: "&6=== Убийства жителей игроком {player} в радиусе ±2 блок от координат {coords} ==="
+  tracker-world-suffix: " (мир: {world})"
+  tracker-no-records: "&7Записей не найдено."
+  tracker-total-records: "&7Всего записей: &e{count}"
+  tracker-entry-header: "&7[{number}] &e{player}"
+  tracker-entry-type: "  &7Тип: &f{type}"
+  tracker-entry-world: "  &7Мир: &f{world}"
+  tracker-entry-coords: "  &7Координаты: "
+  tracker-entry-coords-click: "&f{coords} &7[&aТП&7]"
+  tracker-coords-hover: "Нажмите для телепортации ({world})"
+  tracker-entry-date: "  &7Дата: &f{date}"
+  tracker-entry-enchantments: "  &7Зачарования: &f{enchantments}"
+  tracker-shown-last: "&7Показаны последние {shown} записей из {total}"
+  tracker-notify: "&c[VillagerTracker] &fИгрок &e{player} &fубил жителя типа &b{type} &fв мире &a{world} &fпо координатам "
+  tracker-coords-usage: "&cОшибка: Для поиска по координатам укажите X Y Z или используйте 'coords'"
+  tracker-usage: "&7Использование: /history <игрок> или /history <x> <y> <z> или /history coords"
+  tracker-usage-full: |
+    &cОшибка: Неверное количество аргументов!
+    &7Использование:
+    &7  /history - все записи
+    &7  /history <игрок> - записи игрока
+    &7  /history <x> <y> <z> - записи по координатам
+    &7  /history coords - записи по вашим координатам
+    &7  /history coords <игрок> - записи игрока по вашим координатам
+    &7  /history <игрок> <x> <y> <z> - комбинированный поиск
+    &7  /history clear <время> - очистить старые записи (7d, 30d, 1h...)
+  tracker-clear-success: "&aУдалено {count} записей старше {time}."
+  tracker-clear-usage: "&cИспользование: /history clear <время> (например: 7d, 30d, 1h)"
+  tracker-clear-invalid-time: "&cНеверный формат времени! Примеры: 7d, 30d, 1h, 2w"
+  
+  # Database
+  database-error: "&cОшибка базы данных!"
+  database-connected: "&aПодключение к базе данных установлено."
+  database-disconnected: "&eОтключение от базы данных."
+

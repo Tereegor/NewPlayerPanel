@@ -1,0 +1,14 @@
+# Language / Язык (ru, en)
+language: ru
+
+# Storage type
+# database - SQLite database (plugins/NewPlayerPanel/database.db)
+# json - JSON files (plugins/NewPlayerPanel/data/)
+storage: database
+
+# Villager Tracker settings
+villager-tracker:
+  # Only track villagers with opened trades
+  only-traded: true
+  # Notify players with permission
+  notify-enabled: true

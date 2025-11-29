@@ -6,6 +6,7 @@ import java.util.Map;
 public class VillagerDeathRecord {
     
     private final String playerName;
+    private final String playerUUID;
     private final String villagerType;
     private final String world;
     private final double x;
@@ -14,9 +15,10 @@ public class VillagerDeathRecord {
     private final long timestamp;
     private final Map<String, Integer> enchantments;
     
-    public VillagerDeathRecord(String playerName, String villagerType, String world, 
+    public VillagerDeathRecord(String playerName, String playerUUID, String villagerType, String world, 
                               double x, double y, double z, Map<String, Integer> enchantments) {
         this.playerName = playerName;
+        this.playerUUID = playerUUID;
         this.villagerType = villagerType;
         this.world = world;
         this.x = x;
@@ -26,8 +28,25 @@ public class VillagerDeathRecord {
         this.enchantments = enchantments != null ? new HashMap<>(enchantments) : new HashMap<>();
     }
     
+    public VillagerDeathRecord(String playerName, String playerUUID, String villagerType, String world, 
+                              double x, double y, double z, long timestamp, Map<String, Integer> enchantments) {
+        this.playerName = playerName;
+        this.playerUUID = playerUUID;
+        this.villagerType = villagerType;
+        this.world = world;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.timestamp = timestamp;
+        this.enchantments = enchantments != null ? new HashMap<>(enchantments) : new HashMap<>();
+    }
+    
     public String getPlayerName() {
         return playerName;
+    }
+    
+    public String getPlayerUUID() {
+        return playerUUID;
     }
     
     public String getVillagerType() {
@@ -61,18 +80,15 @@ public class VillagerDeathRecord {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Игрок: ").append(playerName)
-          .append(", Тип жителя: ").append(villagerType)
-          .append(", Мир: ").append(world)
-          .append(", Координаты: ").append(String.format("%.2f, %.2f, %.2f", x, y, z));
+        sb.append("VillagerDeathRecord{player=").append(playerName)
+          .append(", type=").append(villagerType)
+          .append(", world=").append(world)
+          .append(", coords=").append(String.format("%.2f, %.2f, %.2f", x, y, z));
         
         if (!enchantments.isEmpty()) {
-            sb.append(", Зачарования: ");
-            enchantments.forEach((name, level) -> 
-                sb.append(name).append(" ").append(level).append("; "));
+            sb.append(", enchantments=").append(enchantments);
         }
         
-        return sb.toString();
+        return sb.append("}").toString();
     }
 }
-

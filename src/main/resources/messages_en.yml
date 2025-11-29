@@ -1,0 +1,75 @@
+# English translations
+# These messages will be loaded into the database on first run
+
+messages:
+  # General
+  no-permission: "&cYou don't have permission to use this command!"
+  player-not-found: "&cPlayer not found!"
+  player-only: "&cThis command can only be used by a player!"
+  invalid-number: "&cInvalid number format!"
+  reload-success: "&aConfiguration reloaded!"
+  
+  # Time formatting
+  time-permanent: "permanent"
+  time-seconds: "{time} sec"
+  time-minutes: "{time} min"
+  time-hours: "{hours} h {minutes} min"
+  time-days: "{days} d {hours} h"
+  
+  # Restrictions
+  restrictions-no-active: "&7No active restrictions."
+  restrictions-header: "&6=== Restrictions: {player} ==="
+  restrictions-entry: "&7- &e{restriction} &7(&f{time}&7)"
+  restrictions-not-found: "&cRestriction not found!"
+  restrictions-usage: "&cUsage: /restrict <player> <restriction> <time>"
+  restrictions-usage-time: "&70 = remove, -1 = permanent, >0 = time in seconds"
+  restrictions-applied: "&aRestriction applied: {time}"
+  restrictions-removed: "&aRestriction removed from {player}"
+  restrictions-removed-all: "&aAll restrictions removed."
+  restrictions-notify-applied: "&c[NewPlayerPanel] Restriction: {restriction} ({time})"
+  restrictions-notify-removed: "&a[NewPlayerPanel] Restriction removed: {restriction}"
+  restrictions-notify-removed-all: "&a[NewPlayerPanel] All your restrictions have been removed."
+  restrictions-blocked-damage: "&cYou cannot deal damage. Remaining: {time}"
+  restrictions-blocked-item: "&cUsing this item is restricted. Remaining: {time}"
+  restrictions-blocked-drop: "&cYou cannot drop this item. Remaining: {time}"
+  restrictions-blocked-command: "&cThis command is restricted. Remaining: {time}"
+  
+  # Villager Tracker
+  tracker-header-all: "&6=== All Villager Death History ==="
+  tracker-header-player: "&6=== Villager Death History for: {player} ==="
+  tracker-header-coords: "&6=== Villager Deaths within ±2 blocks of {coords} ==="
+  tracker-header-combined: "&6=== Villager Deaths by {player} within ±2 blocks of {coords} ==="
+  tracker-world-suffix: " (world: {world})"
+  tracker-no-records: "&7No records found."
+  tracker-total-records: "&7Total records: &e{count}"
+  tracker-entry-header: "&7[{number}] &e{player}"
+  tracker-entry-type: "  &7Type: &f{type}"
+  tracker-entry-world: "  &7World: &f{world}"
+  tracker-entry-coords: "  &7Coordinates: "
+  tracker-entry-coords-click: "&f{coords} &7[&aTP&7]"
+  tracker-coords-hover: "Click to teleport ({world})"
+  tracker-entry-date: "  &7Date: &f{date}"
+  tracker-entry-enchantments: "  &7Enchantments: &f{enchantments}"
+  tracker-shown-last: "&7Shown last {shown} records out of {total}"
+  tracker-notify: "&c[VillagerTracker] &fPlayer &e{player} &fkilled villager type &b{type} &fin world &a{world} &fat coordinates "
+  tracker-coords-usage: "&cError: For coordinate search specify X Y Z or use 'coords'"
+  tracker-usage: "&7Usage: /history <player> or /history <x> <y> <z> or /history coords"
+  tracker-usage-full: |
+    &cError: Invalid number of arguments!
+    &7Usage:
+    &7  /history - all records
+    &7  /history <player> - player records
+    &7  /history <x> <y> <z> - records by coordinates
+    &7  /history coords - records at your coordinates
+    &7  /history coords <player> - player records at your coordinates
+    &7  /history <player> <x> <y> <z> - combined search
+    &7  /history clear <time> - clear old records (7d, 30d, 1h...)
+  tracker-clear-success: "&aDeleted {count} records older than {time}."
+  tracker-clear-usage: "&cUsage: /history clear <time> (e.g.: 7d, 30d, 1h)"
+  tracker-clear-invalid-time: "&cInvalid time format! Examples: 7d, 30d, 1h, 2w"
+  
+  # Database
+  database-error: "&cDatabase error!"
+  database-connected: "&aDatabase connection established."
+  database-disconnected: "&eDatabase disconnected."
+

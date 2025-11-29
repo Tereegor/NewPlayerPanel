@@ -1,5 +1,6 @@
 package newplayerpanel.restrictions;
 
+import newplayerpanel.messages.MessageManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -14,26 +15,28 @@ import java.util.UUID;
 public class UnrestrictCommand implements CommandExecutor, TabCompleter {
     
     private final RestrictionsManager restrictionsManager;
+    private final MessageManager messageManager;
     
-    public UnrestrictCommand(RestrictionsManager restrictionsManager) {
+    public UnrestrictCommand(RestrictionsManager restrictionsManager, MessageManager messageManager) {
         this.restrictionsManager = restrictionsManager;
+        this.messageManager = messageManager;
     }
     
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!sender.hasPermission("newplayerpanel.restrictions.restrict")) {
-            sender.sendMessage("§cУ вас нет прав для использования этой команды!");
+            sender.sendMessage(messageManager.get("no-permission"));
             return true;
         }
         
         if (args.length < 2) {
-            sender.sendMessage("§cИспользование: /unrestrict <игрок> <ограничение|all>");
+            sender.sendMessage(messageManager.get("restrictions-usage"));
             return true;
         }
         
         Player targetPlayer = Bukkit.getPlayer(args[0]);
         if (targetPlayer == null) {
-            sender.sendMessage("§cИгрок не найден!");
+            sender.sendMessage(messageManager.get("player-not-found"));
             return true;
         }
         
@@ -42,17 +45,17 @@ public class UnrestrictCommand implements CommandExecutor, TabCompleter {
         if (args[1].equalsIgnoreCase("all")) {
             List<PlayerRestriction> active = restrictionsManager.getPlayerRestrictions(playerUUID);
             if (active.isEmpty()) {
-                sender.sendMessage("§7Нет активных ограничений.");
+                sender.sendMessage(messageManager.get("restrictions-no-active"));
                 return true;
             }
             
             active.forEach(pr -> restrictionsManager.removePlayerRestriction(playerUUID, pr.getRestrictionName()));
-            sender.sendMessage("§aВсе ограничения сняты.");
-            targetPlayer.sendMessage("§a[NewPlayerPanel] Все ваши ограничения были сняты.");
+            sender.sendMessage(messageManager.get("restrictions-removed-all"));
+            targetPlayer.sendMessage(messageManager.get("restrictions-notify-removed-all"));
         } else {
             restrictionsManager.removePlayerRestriction(playerUUID, args[1]);
-            sender.sendMessage("§aОграничение снято.");
-            targetPlayer.sendMessage("§a[NewPlayerPanel] С вас снято ограничение: " + args[1]);
+            sender.sendMessage(messageManager.get("restrictions-removed", "player", targetPlayer.getName()));
+            targetPlayer.sendMessage(messageManager.get("restrictions-notify-removed", "restriction", args[1]));
         }
         
         return true;
@@ -83,4 +86,3 @@ public class UnrestrictCommand implements CommandExecutor, TabCompleter {
         return completions;
     }
 }
-

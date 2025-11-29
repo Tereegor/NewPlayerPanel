@@ -1,50 +1,65 @@
-# NewPlayerPanel
+# NewPlayerPanel v2.0.0
+
+Плагин для администрирования игроков на Minecraft сервере.
+
 ## Возможности
 
-- **Villager Tracker** - отслеживание убийств жителей
-- **TNT Protection** - защита от использования TNT для новых игроков
-- **Restrictions System** - система временных ограничений для игроков
+- **Villager Tracker** — отслеживание убийств жителей с открытыми торгами
+- **Restrictions System** — гибкая система временных ограничений для игроков
+- **Удобное хранение данных** — SQLite база данных или JSON файлы
+- **Мультиязычность** — поддержка русского и английского языков
 
 ## Команды
 
-### Villager Tracker
+### История жителей
 
-- `/villagerhistory` - показать все записи
-- `/villagerhistory <игрок>` - записи конкретного игрока
-- `/villagerhistory <x> <y> <z>` - записи по координатам (±2 блока)
-- `/villagerhistory coords` - вставляет текущие координаты
+| Команда | Описание |
+|---------|----------|
+| `/history` | Показать все записи |
+| `/history <игрок>` | Записи конкретного игрока |
+| `/history <x> <y> <z>` | Записи по координатам (±2 блока) |
+| `/history coords` | Записи по текущим координатам |
+| `/history <игрок> <x> <y> <z>` | Комбинированный поиск |
+| `/history clear <время>` | Очистить старые записи (7d, 30d, 1h...) |
 
-### Restrictions
+### Ограничения
 
-- `/restrict <игрок> <ограничение> <время>` - применить ограничение
-  - `0` - снять ограничение
-  - `-1` - перманентно
-  - `> 0` - время в секундах
-- `/unrestrict <игрок> <ограничение|all>` - снять ограничение
-- `/restrictions [игрок]` - просмотр активных ограничений
+| Команда | Описание |
+|---------|----------|
+| `/restrict <игрок> <ограничение> <время>` | Применить ограничение |
+| `/unrestrict <игрок> <ограничение\|all>` | Снять ограничение |
+| `/restrictions [игрок]` | Просмотр активных ограничений |
 
-### TNT Protection
-
-- `/tntprotection` или `/tnt` - справка
-- `/tntprotection time [игрок]` - показать время игрока и доступность TNT
-- `/tntprotection settings` - показать настройки защиты
-- `/tntprotection reload` - перезагрузить конфигурацию
+**Форматы времени:**
+- `0` — снять ограничение
+- `-1` — перманентно
+- `300` — 300 секунд
+- `1h`, `7d`, `30d` — 1 час, 7 дней, 30 дней
 
 ## Разрешения
 
-- `newplayerpanel.history` - просмотр истории жителей (по умолчанию: op)
-- `newplayerpanel.notify` - получение уведомлений о смерти жителей (по умолчанию: false)
-- `newplayerpanel.restrictions.bypass` - обход всех ограничений (по умолчанию: op)
-- `newplayerpanel.restrictions.restrict` - применение ограничений (по умолчанию: op)
-- `newplayerpanel.restrictions.view` - просмотр ограничений (по умолчанию: op)
-- `newplayerpanel.tntprotection.bypass` - обход TNT Protection (по умолчанию: op)
-- `newplayerpanel.tntprotection.manage` - управление TNT Protection (по умолчанию: op)
+| Разрешение | Описание | По умолчанию |
+|------------|----------|--------------|
+| `newplayerpanel.history` | Просмотр истории жителей | op |
+| `newplayerpanel.history.clear` | Очистка истории жителей | op |
+| `newplayerpanel.notify` | Уведомления о смерти жителей | op |
+| `newplayerpanel.restrictions.bypass` | Обход всех ограничений | op |
+| `newplayerpanel.restrictions.restrict` | Применение ограничений | op |
+| `newplayerpanel.restrictions.view` | Просмотр ограничений | op |
 
 ## Конфигурация
 
-### restrictions.yml
+### config.yml
 
-Настройка ограничений для игроков. Пример:
+```yaml
+language: ru
+storage: database
+villager-tracker:
+  only-traded: true
+  notify-enabled: true
+```
+
+### restrictions.yml
 
 ```yaml
 restrictions:
@@ -52,43 +67,63 @@ restrictions:
     type: ENTITY
     actions: DAMAGE
     entity: [minecraft:villager]
-    time: 0
+    time: -1
+    default: false
+  
+  - name: tnt_place_restriction
+    type: ITEM
+    actions: USE
+    item: [minecraft:tnt]
+    time: 28800
     default: true
 ```
 
-### tntprotection.yml
+**Типы ограничений:**
+- `ENTITY` — действия с сущностями (DAMAGE)
+- `ITEM` — действия с предметами (USE, DROP, EQUIP)
+- `COMMAND` — команды (EXECUTE)
 
-Настройка защиты от TNT. По умолчанию требуется 8 часов на сервере.
+**Параметр default:**
+- `true` — применяется ко всем игрокам
+- `false` — применяется только через команду `/restrict`
+
+## Хранилище данных
+
+При `storage: database`:
+- Все данные в `plugins/NewPlayerPanel/database.db`
+
+При `storage: json`:
+- `plugins/NewPlayerPanel/data/messages.json`
+- `plugins/NewPlayerPanel/data/villager_deaths.json`
+- `plugins/NewPlayerPanel/data/restrictions.json`
 
 ## Примеры использования
 
-**Применить ограничение на 5 минут:**
-```
+```bash
+# Ограничить игрока на 5 минут
 /restrict Player villager_hit_restriction 300
-```
+/restrict Player villager_hit_restriction 5m
 
-**Применить перманентное ограничение:**
-```
-/restrict Player villager_hit_restriction -1
-```
-
-**Снять ограничение:**
-```
-/restrict Player villager_hit_restriction 0
-```
-
-**Разрешить игроку использовать TNT раньше времени:**
-```
+# Перманентное ограничение
 /restrict Player tnt_place_restriction -1
+
+# Снять ограничение
+/unrestrict Player tnt_place_restriction
+
+# Снять все ограничения
+/unrestrict Player all
+
+# Очистить историю старше 7 дней
+/history clear 7d
 ```
 
 ## Требования
 
-- Minecraft Server: Purpur 1.21.10
-- Java: 21
+- **Сервер:** Purpur/Paper/Bukkit 1.21+
+- **Java:** 21
 
 ## Справка
 
-- Автор - Math_Tereegor
-- Плагин создан для проекта DuckHood
-- Подали идею и помогли 6oJIeH и MISQZY
+- **Разработчик:** Math_Tereegor
+- **Проект:** DuckHood
+- **Идеи и помощь:** 6oJIeH, MISQZY

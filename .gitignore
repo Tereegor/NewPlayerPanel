@@ -67,7 +67,7 @@ Desktop.ini
 *.swo
 *~
 
-# Server files (if running locally)
+# Server files
 logs/
 crash-reports/
 debug/

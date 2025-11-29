@@ -1,5 +1,7 @@
 package newplayerpanel.restrictions;
 
+import newplayerpanel.messages.MessageManager;
+import newplayerpanel.storage.StorageProvider;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -14,19 +16,23 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RestrictionsManager {
     
     private final JavaPlugin plugin;
+    private final StorageProvider storageProvider;
+    private final MessageManager messageManager;
     private File restrictionsFile;
     private FileConfiguration restrictionsConfig;
     private List<Restriction> restrictions;
-    private final Map<UUID, List<PlayerRestriction>> playerRestrictions;
-    private final Map<String, DefaultRestrictionState> defaultRestrictionStates;
+    private final Map<UUID, List<PlayerRestriction>> playerRestrictionsCache;
     private int cleanupTaskId;
+    private long serverStartTime;
     
-    public RestrictionsManager(JavaPlugin plugin) {
+    public RestrictionsManager(JavaPlugin plugin, StorageProvider storageProvider, MessageManager messageManager) {
         this.plugin = plugin;
+        this.storageProvider = storageProvider;
+        this.messageManager = messageManager;
         this.restrictions = new ArrayList<>();
-        this.playerRestrictions = new ConcurrentHashMap<>();
-        this.defaultRestrictionStates = new ConcurrentHashMap<>();
+        this.playerRestrictionsCache = new ConcurrentHashMap<>();
         this.restrictionsFile = new File(plugin.getDataFolder(), "restrictions.yml");
+        this.serverStartTime = System.currentTimeMillis();
     }
     
     public void loadRestrictions() {
@@ -37,7 +43,7 @@ public class RestrictionsManager {
                     Files.copy(in, restrictionsFile.toPath());
                 }
             } catch (Exception e) {
-                plugin.getLogger().warning("Не удалось создать файл restrictions.yml: " + e.getMessage());
+                plugin.getLogger().warning("Failed to create restrictions.yml: " + e.getMessage());
             }
         }
         
@@ -54,53 +60,47 @@ public class RestrictionsManager {
                         Restriction restriction = Restriction.fromMap(map);
                         restrictions.add(restriction);
                     } catch (Exception e) {
-                        plugin.getLogger().warning("Ошибка при загрузке ограничения: " + e.getMessage());
+                        plugin.getLogger().warning("Error loading restriction: " + e.getMessage());
                     }
                 }
             }
         }
         
-        plugin.getLogger().info("Загружено " + restrictions.size() + " ограничений.");
+        plugin.getLogger().info("Loaded " + restrictions.size() + " restrictions.");
         
-        activateDefaultRestrictions();
+        loadPlayerRestrictionsFromStorage();
         startCleanupTask();
     }
     
-    private void activateDefaultRestrictions() {
-        for (Restriction restriction : restrictions) {
-            if (restriction.isDefault() && restriction.getTimeSeconds() != 0) {
-                DefaultRestrictionState state = new DefaultRestrictionState(
-                    restriction.getName(), 
-                    restriction.getTimeSeconds()
-                );
-                defaultRestrictionStates.put(restriction.getName(), state);
-            }
-        }
+    private void loadPlayerRestrictionsFromStorage() {
+        playerRestrictionsCache.clear();
+        playerRestrictionsCache.putAll(storageProvider.loadPlayerRestrictions());
+        plugin.getLogger().info("Loaded " + playerRestrictionsCache.size() + " players with active restrictions.");
     }
     
     private void startCleanupTask() {
+        if (cleanupTaskId != 0) {
+            Bukkit.getScheduler().cancelTask(cleanupTaskId);
+        }
         cleanupTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
             cleanupExpiredRestrictions();
-            cleanupExpiredDefaultRestrictions();
         }, 20L, 20L * 10L);
     }
     
     private void cleanupExpiredRestrictions() {
-        playerRestrictions.entrySet().removeIf(entry -> {
+        playerRestrictionsCache.entrySet().removeIf(entry -> {
             entry.getValue().removeIf(PlayerRestriction::isExpired);
             return entry.getValue().isEmpty();
         });
-    }
-    
-    private void cleanupExpiredDefaultRestrictions() {
-        defaultRestrictionStates.entrySet().removeIf(entry -> entry.getValue().isExpired());
+        
+        storageProvider.cleanupExpiredRestrictions();
     }
     
     public void saveRestrictions() {
         try {
             restrictionsConfig.save(restrictionsFile);
         } catch (Exception e) {
-            plugin.getLogger().warning("Не удалось сохранить restrictions.yml: " + e.getMessage());
+            plugin.getLogger().warning("Failed to save restrictions.yml: " + e.getMessage());
         }
     }
     
@@ -116,15 +116,20 @@ public class RestrictionsManager {
     }
     
     public void addPlayerRestriction(UUID playerUUID, String restrictionName, long durationSeconds) {
-        List<PlayerRestriction> playerRests = playerRestrictions.computeIfAbsent(playerUUID, k -> new ArrayList<>());
+        List<PlayerRestriction> playerRests = playerRestrictionsCache.computeIfAbsent(playerUUID, k -> new ArrayList<>());
         
         playerRests.removeIf(pr -> pr.getRestrictionName().equalsIgnoreCase(restrictionName));
         
-        playerRests.add(new PlayerRestriction(playerUUID, restrictionName, durationSeconds));
+        PlayerRestriction newRestriction = new PlayerRestriction(playerUUID, restrictionName, durationSeconds);
+        playerRests.add(newRestriction);
+        
+        boolean isPermanent = durationSeconds == -1;
+        long expireTime = isPermanent ? Long.MAX_VALUE : System.currentTimeMillis() + (durationSeconds * 1000L);
+        storageProvider.savePlayerRestriction(playerUUID, restrictionName, expireTime, isPermanent);
     }
     
     public long getPlayerRestrictionTime(UUID playerUUID, String restrictionName) {
-        List<PlayerRestriction> playerRests = playerRestrictions.get(playerUUID);
+        List<PlayerRestriction> playerRests = playerRestrictionsCache.get(playerUUID);
         if (playerRests != null) {
             for (PlayerRestriction pr : playerRests) {
                 if (pr.getRestrictionName().equalsIgnoreCase(restrictionName) && !pr.isExpired()) {
@@ -136,17 +141,19 @@ public class RestrictionsManager {
     }
     
     public void removePlayerRestriction(UUID playerUUID, String restrictionName) {
-        List<PlayerRestriction> playerRests = playerRestrictions.get(playerUUID);
+        List<PlayerRestriction> playerRests = playerRestrictionsCache.get(playerUUID);
         if (playerRests != null) {
             playerRests.removeIf(pr -> pr.getRestrictionName().equalsIgnoreCase(restrictionName));
             if (playerRests.isEmpty()) {
-                playerRestrictions.remove(playerUUID);
+                playerRestrictionsCache.remove(playerUUID);
             }
         }
+        
+        storageProvider.removePlayerRestriction(playerUUID, restrictionName);
     }
     
     public boolean hasPlayerRestriction(UUID playerUUID, String restrictionName) {
-        List<PlayerRestriction> playerRests = playerRestrictions.get(playerUUID);
+        List<PlayerRestriction> playerRests = playerRestrictionsCache.get(playerUUID);
         if (playerRests != null) {
             for (PlayerRestriction pr : playerRests) {
                 if (pr.getRestrictionName().equalsIgnoreCase(restrictionName) && !pr.isExpired()) {
@@ -158,20 +165,39 @@ public class RestrictionsManager {
     }
     
     public boolean shouldApplyDefaultRestriction(UUID playerUUID, Restriction restriction) {
-        if (!restriction.isDefault() || hasPlayerRestriction(playerUUID, restriction.getName())) {
+        if (!restriction.isDefault()) {
             return false;
         }
         
-        DefaultRestrictionState state = defaultRestrictionStates.get(restriction.getName());
-        return state != null && !state.isExpired();
+        if (hasPlayerRestriction(playerUUID, restriction.getName())) {
+            return false;
+        }
+        
+        int timeSeconds = restriction.getTimeSeconds();
+        
+        if (timeSeconds <= 0) {
+            return true;
+        }
+        
+        long elapsedSeconds = (System.currentTimeMillis() - serverStartTime) / 1000L;
+        return elapsedSeconds < timeSeconds;
     }
     
     public long getDefaultRestrictionRemainingTime(String restrictionName) {
-        DefaultRestrictionState state = defaultRestrictionStates.get(restrictionName);
-        if (state != null && !state.isExpired()) {
-            return state.getRemainingSeconds();
+        Restriction restriction = getRestrictionByName(restrictionName);
+        if (restriction == null || !restriction.isDefault()) {
+            return 0;
         }
-        return 0;
+        
+        int timeSeconds = restriction.getTimeSeconds();
+        
+        if (timeSeconds <= 0) {
+            return -1;
+        }
+        
+        long elapsedSeconds = (System.currentTimeMillis() - serverStartTime) / 1000L;
+        long remaining = timeSeconds - elapsedSeconds;
+        return remaining > 0 ? remaining : 0;
     }
     
     public long getRestrictionRemainingTime(UUID playerUUID, String restrictionName) {
@@ -181,15 +207,17 @@ public class RestrictionsManager {
                 return pr.getRemainingSeconds();
             }
         }
+        
         return getDefaultRestrictionRemainingTime(restrictionName);
     }
     
     public boolean isRestricted(UUID playerUUID, Restriction restriction) {
-        return hasPlayerRestriction(playerUUID, restriction.getName()) || shouldApplyDefaultRestriction(playerUUID, restriction);
+        return hasPlayerRestriction(playerUUID, restriction.getName()) || 
+               shouldApplyDefaultRestriction(playerUUID, restriction);
     }
     
     public List<PlayerRestriction> getPlayerRestrictions(UUID playerUUID) {
-        List<PlayerRestriction> playerRests = playerRestrictions.get(playerUUID);
+        List<PlayerRestriction> playerRests = playerRestrictionsCache.get(playerUUID);
         if (playerRests != null) {
             playerRests.removeIf(PlayerRestriction::isExpired);
             return new ArrayList<>(playerRests);
@@ -198,7 +226,6 @@ public class RestrictionsManager {
     }
     
     public void reloadRestrictions() {
-        defaultRestrictionStates.clear();
         loadRestrictions();
     }
     
@@ -207,5 +234,8 @@ public class RestrictionsManager {
             Bukkit.getScheduler().cancelTask(cleanupTaskId);
         }
     }
+    
+    public MessageManager getMessageManager() {
+        return messageManager;
+    }
 }
-

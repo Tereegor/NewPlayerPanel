@@ -1,5 +1,6 @@
 package newplayerpanel.restrictions;
 
+import newplayerpanel.messages.MessageManager;
 import newplayerpanel.util.ActionBarUtil;
 import newplayerpanel.util.TimeUtil;
 import org.bukkit.Bukkit;
@@ -16,41 +17,41 @@ import java.util.UUID;
 public class RestrictCommand implements CommandExecutor, TabCompleter {
     
     private final RestrictionsManager restrictionsManager;
+    private final MessageManager messageManager;
     
-    public RestrictCommand(RestrictionsManager restrictionsManager) {
+    public RestrictCommand(RestrictionsManager restrictionsManager, MessageManager messageManager) {
         this.restrictionsManager = restrictionsManager;
+        this.messageManager = messageManager;
     }
     
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!sender.hasPermission("newplayerpanel.restrictions.restrict")) {
-            sender.sendMessage("§cУ вас нет прав для использования этой команды!");
+            sender.sendMessage(messageManager.get("no-permission"));
             return true;
         }
         
         if (args.length < 3) {
-            sender.sendMessage("§cИспользование: /restrict <игрок> <ограничение> <время в секундах>");
-            sender.sendMessage("§70 = снять, -1 = перманентно, >0 = время в секундах");
+            sender.sendMessage(messageManager.get("restrictions-usage"));
+            sender.sendMessage(messageManager.get("restrictions-usage-time"));
             return true;
         }
         
         Player targetPlayer = Bukkit.getPlayer(args[0]);
         if (targetPlayer == null) {
-            sender.sendMessage("§cИгрок не найден!");
+            sender.sendMessage(messageManager.get("player-not-found"));
             return true;
         }
         
         Restriction restriction = restrictionsManager.getRestrictionByName(args[1]);
         if (restriction == null) {
-            sender.sendMessage("§cОграничение не найдено!");
+            sender.sendMessage(messageManager.get("restrictions-not-found"));
             return true;
         }
         
-        long durationSeconds;
-        try {
-            durationSeconds = Long.parseLong(args[2]);
-        } catch (NumberFormatException e) {
-            sender.sendMessage("§cНеверный формат времени!");
+        long durationSeconds = TimeUtil.parseTimeInput(args[2]);
+        if (durationSeconds == Long.MIN_VALUE) {
+            sender.sendMessage(messageManager.get("invalid-number"));
             return true;
         }
         
@@ -59,13 +60,15 @@ public class RestrictCommand implements CommandExecutor, TabCompleter {
         
         if (durationSeconds == 0) {
             restrictionsManager.removePlayerRestriction(playerUUID, restrictionName);
-            sender.sendMessage("§aОграничение снято с " + targetPlayer.getName());
-            ActionBarUtil.sendActionBar(targetPlayer, "§a[NewPlayerPanel] С вас снято ограничение: " + restrictionName);
+            sender.sendMessage(messageManager.get("restrictions-removed", "player", targetPlayer.getName()));
+            ActionBarUtil.sendActionBar(targetPlayer, 
+                messageManager.get("restrictions-notify-removed", "restriction", restrictionName));
         } else {
             restrictionsManager.addPlayerRestriction(playerUUID, restrictionName, durationSeconds);
-            String timeStr = TimeUtil.formatTime(durationSeconds);
-            sender.sendMessage("§aОграничение применено: " + timeStr);
-            ActionBarUtil.sendActionBar(targetPlayer, "§c[NewPlayerPanel] Ограничение: " + restrictionName + " (" + timeStr + ")");
+            String timeStr = TimeUtil.formatTimeLocalized(durationSeconds, messageManager);
+            sender.sendMessage(messageManager.get("restrictions-applied", "time", timeStr));
+            ActionBarUtil.sendActionBar(targetPlayer, 
+                messageManager.get("restrictions-notify-applied", "restriction", restrictionName, "time", timeStr));
         }
         
         return true;
@@ -90,9 +93,11 @@ public class RestrictCommand implements CommandExecutor, TabCompleter {
         } else if (args.length == 3) {
             completions.add("0");
             completions.add("-1");
+            completions.add("1h");
+            completions.add("1d");
+            completions.add("7d");
         }
         
         return completions;
     }
 }
-

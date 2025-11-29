@@ -6,30 +6,30 @@
 
     <groupId>com.example</groupId>
     <artifactId>newplayerpanel</artifactId>
-    <version>1.0.0</version>
+    <version>2.0.0</version>
     <packaging>jar</packaging>
 
     <name>NewPlayerPanel</name>
     <description>Admin panel plugin for player management</description>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <purpur.version>1.21.1-R0.1-SNAPSHOT</purpur.version>
+        <spigot.version>1.20.4-R0.1-SNAPSHOT</spigot.version>
     </properties>
 
     <repositories>
         <repository>
-            <id>purpur</id>
-            <url>https://repo.purpurmc.org/snapshots</url>
+            <id>spigot-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
     </repositories>
 
     <dependencies>
         <dependency>
-            <groupId>org.purpurmc.purpur</groupId>
-            <artifactId>purpur-api</artifactId>
-            <version>${purpur.version}</version>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <version>${spigot.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -37,6 +37,16 @@
             <artifactId>gson</artifactId>
             <version>2.10.1</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>5.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.45.1.0</version>
         </dependency>
     </dependencies>
 
@@ -61,6 +71,14 @@
                         <goals>
                             <goal>shade</goal>
                         </goals>
+                        <configuration>
+                            <relocations>
+                            <relocation>
+                                <pattern>com.zaxxer.hikari</pattern>
+                                <shadedPattern>newplayerpanel.libs.hikari</shadedPattern>
+                            </relocation>
+                            </relocations>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -73,4 +91,3 @@
         </resources>
     </build>
 </project>
-
