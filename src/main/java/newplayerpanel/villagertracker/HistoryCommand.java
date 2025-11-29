@@ -35,7 +35,7 @@ public class HistoryCommand implements CommandExecutor, TabCompleter {
             return true;
         }
         
-        if (args.length >= 1 && args[0].equalsIgnoreCase("clear")) {
+        if (args.length >= 1 && args[0].equalsIgnoreCase("purge")) {
             return handleClearCommand(sender, args);
         }
         
@@ -213,13 +213,13 @@ public class HistoryCommand implements CommandExecutor, TabCompleter {
     }
     
     private boolean handleClearCommand(CommandSender sender, String[] args) {
-        if (!sender.hasPermission("newplayerpanel.history.clear")) {
+        if (!sender.hasPermission("newplayerpanel.history.purge")) {
             sender.sendMessage(messageManager.get("no-permission"));
             return true;
         }
         
         if (args.length < 2) {
-            sender.sendMessage(messageManager.get("tracker-clear-usage"));
+            sender.sendMessage(messageManager.get("tracker-purge-usage"));
             return true;
         }
         
@@ -227,7 +227,7 @@ public class HistoryCommand implements CommandExecutor, TabCompleter {
         long seconds = TimeUtil.parseTimeString(timeString);
         
         if (seconds <= 0) {
-            sender.sendMessage(messageManager.get("tracker-clear-invalid-time"));
+            sender.sendMessage(messageManager.get("tracker-purge-invalid-time"));
             return true;
         }
         
@@ -235,7 +235,7 @@ public class HistoryCommand implements CommandExecutor, TabCompleter {
         int deletedCount = dataManager.clearOldRecords(olderThanTimestamp);
         
         if (deletedCount >= 0) {
-            sender.sendMessage(messageManager.get("tracker-clear-success", 
+            sender.sendMessage(messageManager.get("tracker-purge-success", 
                 "count", String.valueOf(deletedCount),
                 "time", timeString));
         } else {
@@ -252,8 +252,8 @@ public class HistoryCommand implements CommandExecutor, TabCompleter {
         if (args.length == 1) {
             String input = args[0].toLowerCase();
             
-            if ("clear".startsWith(input)) {
-                completions.add("clear");
+            if ("purge".startsWith(input)) {
+                completions.add("purge");
             }
             
             if ("coords".startsWith(input)) {
@@ -266,7 +266,7 @@ public class HistoryCommand implements CommandExecutor, TabCompleter {
                 }
             }
         } else if (args.length == 2) {
-            if (args[0].equalsIgnoreCase("clear")) {
+            if (args[0].equalsIgnoreCase("purge")) {
                 completions.add("1h");
                 completions.add("1d");
                 completions.add("7d");

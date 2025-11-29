@@ -63,10 +63,10 @@ messages:
     &7  /history coords - records at your coordinates
     &7  /history coords <player> - player records at your coordinates
     &7  /history <player> <x> <y> <z> - combined search
-    &7  /history clear <time> - clear old records (7d, 30d, 1h...)
-  tracker-clear-success: "&aDeleted {count} records older than {time}."
-  tracker-clear-usage: "&cUsage: /history clear <time> (e.g.: 7d, 30d, 1h)"
-  tracker-clear-invalid-time: "&cInvalid time format! Examples: 7d, 30d, 1h, 2w"
+    &7  /history purge <time> - purge old records (7d, 30d, 1h...)
+  tracker-purge-success: "&aDeleted {count} records older than {time}."
+  tracker-purge-usage: "&cUsage: /history purge <time> (e.g.: 7d, 30d, 1h)"
+  tracker-purge-invalid-time: "&cInvalid time format! Examples: 7d, 30d, 1h, 2w"
   
   # Database
   database-error: "&cDatabase error!"

@@ -63,10 +63,10 @@ messages:
     &7  /history coords - записи по вашим координатам
     &7  /history coords <игрок> - записи игрока по вашим координатам
     &7  /history <игрок> <x> <y> <z> - комбинированный поиск
-    &7  /history clear <время> - очистить старые записи (7d, 30d, 1h...)
-  tracker-clear-success: "&aУдалено {count} записей старше {time}."
-  tracker-clear-usage: "&cИспользование: /history clear <время> (например: 7d, 30d, 1h)"
-  tracker-clear-invalid-time: "&cНеверный формат времени! Примеры: 7d, 30d, 1h, 2w"
+    &7  /history purge <время> - очистить старые записи (7d, 30d, 1h...)
+  tracker-purge-success: "&aУдалено {count} записей старше {time}."
+  tracker-purge-usage: "&cИспользование: /history purge <время> (например: 7d, 30d, 1h)"
+  tracker-purge-invalid-time: "&cНеверный формат времени! Примеры: 7d, 30d, 1h, 2w"
   
   # Database
   database-error: "&cОшибка базы данных!"

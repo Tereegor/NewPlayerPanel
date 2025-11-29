@@ -1,4 +1,4 @@
-# NewPlayerPanel v2.0.0
+# NewPlayerPanel v2.0.1
 
 Плагин для администрирования игроков на Minecraft сервере.
 
@@ -20,7 +20,7 @@
 | `/history <x> <y> <z>` | Записи по координатам (±2 блока) |
 | `/history coords` | Записи по текущим координатам |
 | `/history <игрок> <x> <y> <z>` | Комбинированный поиск |
-| `/history clear <время>` | Очистить старые записи (7d, 30d, 1h...) |
+| `/history purge <время>` | Очистить старые записи (7d, 30d, 1h...) |
 
 ### Ограничения
 
@@ -41,7 +41,7 @@
 | Разрешение | Описание | По умолчанию |
 |------------|----------|--------------|
 | `newplayerpanel.history` | Просмотр истории жителей | op |
-| `newplayerpanel.history.clear` | Очистка истории жителей | op |
+| `newplayerpanel.history.purge` | Очистка истории жителей | op |
 | `newplayerpanel.notify` | Уведомления о смерти жителей | op |
 | `newplayerpanel.restrictions.bypass` | Обход всех ограничений | op |
 | `newplayerpanel.restrictions.restrict` | Применение ограничений | op |
@@ -114,7 +114,7 @@ restrictions:
 /unrestrict Player all
 
 # Очистить историю старше 7 дней
-/history clear 7d
+/history purge 7d
 ```
 
 ## Требования

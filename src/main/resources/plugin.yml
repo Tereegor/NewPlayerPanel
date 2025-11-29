@@ -1,6 +1,6 @@
 api-version: '1.20'
 name: NewPlayerPanel
-version: 2.0.0
+version: 2.0.1
 main: newplayerpanel.NewPlayerPanel
 author: Math_Tereegor
 description: Admin panel plugin for player management
@@ -14,7 +14,7 @@ commands:
       /history <x> <y> <z> - records by coordinates (±2 blocks)
       /history coords - records at your coordinates
       /history <player> <x> <y> <z> - combined search
-      /history clear <time> - clear old records (7d, 30d, 1h...)
+      /history purge <time> - purge old records (7d, 30d, 1h...)
     permission: newplayerpanel.history
     permission-message: You don't have permission to use this command!
   restrict:
@@ -37,8 +37,8 @@ permissions:
   newplayerpanel.history:
     description: Allows viewing villager death history
     default: op
-  newplayerpanel.history.clear:
-    description: Allows clearing villager death history
+  newplayerpanel.history.purge:
+    description: Allows purging villager death history
     default: op
   newplayerpanel.notify:
     description: Receive notifications about traded villager deaths
