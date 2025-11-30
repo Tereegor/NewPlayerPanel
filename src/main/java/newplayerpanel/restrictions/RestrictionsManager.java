@@ -3,8 +3,10 @@ package newplayerpanel.restrictions;
 import newplayerpanel.messages.MessageManager;
 import newplayerpanel.storage.StorageProvider;
 import org.bukkit.Bukkit;
+import org.bukkit.Statistic;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -270,10 +272,28 @@ public class RestrictionsManager {
         return false;
     }
     
-    private long getPlayerFirstPlayed(UUID playerUUID) {
+    private long getPlayerPlayTimeSeconds(UUID playerUUID) {
+        Player onlinePlayer = Bukkit.getPlayer(playerUUID);
+        if (onlinePlayer != null) {
+            try {
+                int ticks = onlinePlayer.getStatistic(Statistic.PLAY_ONE_MINUTE);
+                return ticks / 20L;
+            } catch (Exception e) {
+                plugin.getLogger().warning("Failed to get playtime for player " + playerUUID + ": " + e.getMessage());
+            }
+        }
+        
         org.bukkit.OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerUUID);
-        long firstPlayed = offlinePlayer.getFirstPlayed();
-        return firstPlayed > 0 ? firstPlayed : System.currentTimeMillis();
+        if (offlinePlayer instanceof Player) {
+            try {
+                int ticks = ((Player) offlinePlayer).getStatistic(Statistic.PLAY_ONE_MINUTE);
+                return ticks / 20L;
+            } catch (Exception e) {
+                plugin.getLogger().warning("Failed to get playtime for offline player " + playerUUID + ": " + e.getMessage());
+            }
+        }
+        
+        return 0;
     }
     
     public boolean shouldApplyDefaultRestriction(UUID playerUUID, Restriction restriction) {
@@ -287,13 +307,16 @@ public class RestrictionsManager {
         
         int timeSeconds = restriction.getTimeSeconds();
         
-        if (timeSeconds <= 0) {
+        if (timeSeconds == -1) {
             return true;
         }
         
-        long playerFirstPlayed = getPlayerFirstPlayed(playerUUID);
-        long elapsedSeconds = (System.currentTimeMillis() - playerFirstPlayed) / 1000L;
-        return elapsedSeconds < timeSeconds;
+        if (timeSeconds == 0) {
+            return false;
+        }
+        
+        long playerPlayTimeSeconds = getPlayerPlayTimeSeconds(playerUUID);
+        return playerPlayTimeSeconds < timeSeconds;
     }
     
     public long getDefaultRestrictionRemainingTime(UUID playerUUID, String restrictionName) {
@@ -304,13 +327,16 @@ public class RestrictionsManager {
         
         int timeSeconds = restriction.getTimeSeconds();
         
-        if (timeSeconds <= 0) {
+        if (timeSeconds == -1) {
             return -1;
         }
         
-        long playerFirstPlayed = getPlayerFirstPlayed(playerUUID);
-        long elapsedSeconds = (System.currentTimeMillis() - playerFirstPlayed) / 1000L;
-        long remaining = timeSeconds - elapsedSeconds;
+        if (timeSeconds == 0) {
+            return 0;
+        }
+        
+        long playerPlayTimeSeconds = getPlayerPlayTimeSeconds(playerUUID);
+        long remaining = timeSeconds - playerPlayTimeSeconds;
         return remaining > 0 ? remaining : 0;
     }
     

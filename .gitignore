@@ -72,3 +72,5 @@ logs/
 crash-reports/
 debug/
 
+# Documentation
+README_EN.md
