@@ -9,6 +9,15 @@ messages:
   invalid-number: "&cInvalid number format!"
   reload-success: "&aConfiguration reloaded!"
   
+  # NPP Command
+  npp-help-header: "&6=== NewPlayerPanel Commands ==="
+  npp-help-reload: "&e/npp reload &7- Reload configuration"
+  npp-help-addrestriction: "&e/npp addrestriction <name> <type> <actions> [targets...] [time:N] [default:true/false] &7- Create restriction"
+  addrestriction-usage: "&cUsage: /npp addrestriction <name> <type> <actions> [targets...] [time:N] [default:true/false]"
+  addrestriction-invalid-type: "&cInvalid type! Available: {types}"
+  addrestriction-success: "&aRestriction '{name}' created successfully!"
+  addrestriction-error: "&cError creating restriction. It may already exist."
+  
   # Time formatting
   time-permanent: "permanent"
   time-seconds: "{time} sec"
@@ -19,7 +28,9 @@ messages:
   # Restrictions
   restrictions-no-active: "&7No active restrictions."
   restrictions-header: "&6=== Restrictions: {player} ==="
+  restrictions-defaults-header: "&7--- Default restrictions (for all players) ---"
   restrictions-entry: "&7- &e{restriction} &7(&f{time}&7)"
+  restrictions-entry-default: "&7- &b{restriction} &7(&f{time}&7) &8[default]"
   restrictions-not-found: "&cRestriction not found!"
   restrictions-usage: "&cUsage: /restrict <player> <restriction> <time>"
   restrictions-usage-time: "&70 = remove, -1 = permanent, >0 = time in seconds"
@@ -72,4 +83,3 @@ messages:
   database-error: "&cDatabase error!"
   database-connected: "&aDatabase connection established."
   database-disconnected: "&eDatabase disconnected."
-

@@ -9,6 +9,15 @@ messages:
   invalid-number: "&cНеверный формат числа!"
   reload-success: "&aКонфигурация перезагружена!"
   
+  # NPP Command
+  npp-help-header: "&6=== NewPlayerPanel Команды ==="
+  npp-help-reload: "&e/npp reload &7- Перезагрузить конфигурацию"
+  npp-help-addrestriction: "&e/npp addrestriction <имя> <тип> <действия> [цели...] [time:N] [default:true/false] &7- Создать ограничение"
+  addrestriction-usage: "&cИспользование: /npp addrestriction <имя> <тип> <действия> [цели...] [time:N] [default:true/false]"
+  addrestriction-invalid-type: "&cНеверный тип! Доступные: {types}"
+  addrestriction-success: "&aОграничение '{name}' успешно создано!"
+  addrestriction-error: "&cОшибка создания ограничения. Возможно, оно уже существует."
+  
   # Time formatting
   time-permanent: "перманентно"
   time-seconds: "{time} сек"
@@ -19,7 +28,9 @@ messages:
   # Restrictions
   restrictions-no-active: "&7Нет активных ограничений."
   restrictions-header: "&6=== Ограничения: {player} ==="
+  restrictions-defaults-header: "&7--- Стандартные ограничения (для всех) ---"
   restrictions-entry: "&7- &e{restriction} &7(&f{time}&7)"
+  restrictions-entry-default: "&7- &b{restriction} &7(&f{time}&7) &8[default]"
   restrictions-not-found: "&cОграничение не найдено!"
   restrictions-usage: "&cИспользование: /restrict <игрок> <ограничение> <время>"
   restrictions-usage-time: "&70 = снять, -1 = перманентно, >0 = время в секундах"
@@ -72,4 +83,3 @@ messages:
   database-error: "&cОшибка базы данных!"
   database-connected: "&aПодключение к базе данных установлено."
   database-disconnected: "&eОтключение от базы данных."
-

@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import newplayerpanel.restrictions.PlayerRestriction;
 import newplayerpanel.villagertracker.VillagerDeathRecord;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -14,11 +15,14 @@ import java.util.*;
 public class DatabaseStorage implements StorageProvider {
     
     private final JavaPlugin plugin;
+    private final String storageType;
     private HikariDataSource dataSource;
     private final Gson gson = new Gson();
+    private boolean isMySQL = false;
     
-    public DatabaseStorage(JavaPlugin plugin) {
+    public DatabaseStorage(JavaPlugin plugin, String storageType) {
         this.plugin = plugin;
+        this.storageType = storageType;
     }
     
     @Override
@@ -27,15 +31,49 @@ public class DatabaseStorage implements StorageProvider {
             plugin.getDataFolder().mkdirs();
         }
         
-        File databaseFile = new File(plugin.getDataFolder(), "database.db");
-        plugin.getLogger().info("Using SQLite database: " + databaseFile.getAbsolutePath());
-        
         HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl("jdbc:sqlite:" + databaseFile.getAbsolutePath());
-        hikariConfig.setDriverClassName("org.sqlite.JDBC");
-        hikariConfig.setMaximumPoolSize(1);
-        hikariConfig.setMinimumIdle(1);
-        hikariConfig.setConnectionTimeout(30000);
+        
+        if (storageType.equals("MYSQL") || storageType.equals("MARIADB")) {
+            isMySQL = true;
+            FileConfiguration config = plugin.getConfig();
+            
+            String host = config.getString("database.host", "localhost");
+            int port = config.getInt("database.port", 3306);
+            String database = config.getString("database.database", "newplayerpanel");
+            String username = config.getString("database.username", "root");
+            String password = config.getString("database.password", "");
+            
+            String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database + 
+                "?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=utf8&useUnicode=true";
+            
+            if (storageType.equals("MARIADB")) {
+                jdbcUrl = "jdbc:mariadb://" + host + ":" + port + "/" + database + 
+                    "?characterEncoding=utf8&useUnicode=true";
+                hikariConfig.setDriverClassName("org.mariadb.jdbc.Driver");
+            } else {
+                hikariConfig.setDriverClassName("com.mysql.cj.jdbc.Driver");
+            }
+            
+            hikariConfig.setJdbcUrl(jdbcUrl);
+            hikariConfig.setUsername(username);
+            hikariConfig.setPassword(password);
+            hikariConfig.setMaximumPoolSize(config.getInt("database.pool.maximum-pool-size", 10));
+            hikariConfig.setMinimumIdle(config.getInt("database.pool.minimum-idle", 2));
+            hikariConfig.setConnectionTimeout(config.getLong("database.pool.connection-timeout", 30000));
+            hikariConfig.setIdleTimeout(config.getLong("database.pool.idle-timeout", 600000));
+            hikariConfig.setMaxLifetime(config.getLong("database.pool.max-lifetime", 1800000));
+            
+            plugin.getLogger().info("Connecting to " + storageType + " database: " + host + ":" + port + "/" + database);
+        } else {
+            File databaseFile = new File(plugin.getDataFolder(), "database.db");
+            plugin.getLogger().info("Using H2/SQLite database: " + databaseFile.getAbsolutePath());
+            
+            hikariConfig.setJdbcUrl("jdbc:sqlite:" + databaseFile.getAbsolutePath());
+            hikariConfig.setDriverClassName("org.sqlite.JDBC");
+            hikariConfig.setMaximumPoolSize(1);
+            hikariConfig.setMinimumIdle(1);
+            hikariConfig.setConnectionTimeout(30000);
+        }
         
         try {
             dataSource = new HikariDataSource(hikariConfig);
@@ -51,47 +89,89 @@ public class DatabaseStorage implements StorageProvider {
     
     private void createTables() throws SQLException {
         try (Connection conn = dataSource.getConnection(); Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS npp_messages (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    language TEXT NOT NULL,
-                    message_key TEXT NOT NULL,
-                    message_value TEXT NOT NULL,
-                    UNIQUE(language, message_key)
-                )
-            """);
-            
-            stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS npp_villager_deaths (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    player_name TEXT NOT NULL,
-                    player_uuid TEXT NOT NULL,
-                    villager_type TEXT NOT NULL,
-                    world TEXT NOT NULL,
-                    x REAL NOT NULL,
-                    y REAL NOT NULL,
-                    z REAL NOT NULL,
-                    timestamp INTEGER NOT NULL,
-                    enchantments TEXT
-                )
-            """);
-            
-            stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_player ON npp_villager_deaths(player_name)");
-            stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_coords ON npp_villager_deaths(world, x, y, z)");
-            stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_timestamp ON npp_villager_deaths(timestamp)");
-            
-            stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS npp_player_restrictions (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    player_uuid TEXT NOT NULL,
-                    restriction_name TEXT NOT NULL,
-                    expire_time INTEGER NOT NULL,
-                    is_permanent INTEGER NOT NULL DEFAULT 0,
-                    UNIQUE(player_uuid, restriction_name)
-                )
-            """);
-            
-            stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_player_uuid ON npp_player_restrictions(player_uuid)");
+            if (isMySQL) {
+                stmt.executeUpdate("""
+                    CREATE TABLE IF NOT EXISTS npp_messages (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        language VARCHAR(10) NOT NULL,
+                        message_key VARCHAR(255) NOT NULL,
+                        message_value TEXT NOT NULL,
+                        UNIQUE KEY unique_lang_key (language, message_key)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                """);
+                
+                stmt.executeUpdate("""
+                    CREATE TABLE IF NOT EXISTS npp_villager_deaths (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        player_name VARCHAR(64) NOT NULL,
+                        player_uuid VARCHAR(36) NOT NULL,
+                        villager_type VARCHAR(128) NOT NULL,
+                        world VARCHAR(128) NOT NULL,
+                        x DOUBLE NOT NULL,
+                        y DOUBLE NOT NULL,
+                        z DOUBLE NOT NULL,
+                        timestamp BIGINT NOT NULL,
+                        enchantments TEXT,
+                        INDEX idx_player (player_name),
+                        INDEX idx_coords (world, x, y, z),
+                        INDEX idx_timestamp (timestamp)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                """);
+                
+                stmt.executeUpdate("""
+                    CREATE TABLE IF NOT EXISTS npp_player_restrictions (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        player_uuid VARCHAR(36) NOT NULL,
+                        restriction_name VARCHAR(128) NOT NULL,
+                        expire_time BIGINT NOT NULL,
+                        is_permanent TINYINT NOT NULL DEFAULT 0,
+                        UNIQUE KEY unique_player_restriction (player_uuid, restriction_name),
+                        INDEX idx_player_uuid (player_uuid)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                """);
+            } else {
+                stmt.executeUpdate("""
+                    CREATE TABLE IF NOT EXISTS npp_messages (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        language TEXT NOT NULL,
+                        message_key TEXT NOT NULL,
+                        message_value TEXT NOT NULL,
+                        UNIQUE(language, message_key)
+                    )
+                """);
+                
+                stmt.executeUpdate("""
+                    CREATE TABLE IF NOT EXISTS npp_villager_deaths (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        player_name TEXT NOT NULL,
+                        player_uuid TEXT NOT NULL,
+                        villager_type TEXT NOT NULL,
+                        world TEXT NOT NULL,
+                        x REAL NOT NULL,
+                        y REAL NOT NULL,
+                        z REAL NOT NULL,
+                        timestamp INTEGER NOT NULL,
+                        enchantments TEXT
+                    )
+                """);
+                
+                stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_player ON npp_villager_deaths(player_name)");
+                stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_coords ON npp_villager_deaths(world, x, y, z)");
+                stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_timestamp ON npp_villager_deaths(timestamp)");
+                
+                stmt.executeUpdate("""
+                    CREATE TABLE IF NOT EXISTS npp_player_restrictions (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        player_uuid TEXT NOT NULL,
+                        restriction_name TEXT NOT NULL,
+                        expire_time INTEGER NOT NULL,
+                        is_permanent INTEGER NOT NULL DEFAULT 0,
+                        UNIQUE(player_uuid, restriction_name)
+                    )
+                """);
+                
+                stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_player_uuid ON npp_player_restrictions(player_uuid)");
+            }
         }
     }
     
@@ -120,9 +200,12 @@ public class DatabaseStorage implements StorageProvider {
     
     @Override
     public void saveMessage(String language, String key, String value) {
+        String sql = isMySQL 
+            ? "INSERT INTO npp_messages (language, message_key, message_value) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE message_value = VALUES(message_value)"
+            : "INSERT OR REPLACE INTO npp_messages (language, message_key, message_value) VALUES (?, ?, ?)";
+        
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(
-                 "INSERT OR REPLACE INTO npp_messages (language, message_key, message_value) VALUES (?, ?, ?)")) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, language);
             stmt.setString(2, key);
             stmt.setString(3, value);
@@ -268,9 +351,12 @@ public class DatabaseStorage implements StorageProvider {
     
     @Override
     public void savePlayerRestriction(UUID playerUUID, String restrictionName, long expireTime, boolean isPermanent) {
+        String sql = isMySQL 
+            ? "INSERT INTO npp_player_restrictions (player_uuid, restriction_name, expire_time, is_permanent) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE expire_time = VALUES(expire_time), is_permanent = VALUES(is_permanent)"
+            : "INSERT OR REPLACE INTO npp_player_restrictions (player_uuid, restriction_name, expire_time, is_permanent) VALUES (?, ?, ?, ?)";
+        
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(
-                 "INSERT OR REPLACE INTO npp_player_restrictions (player_uuid, restriction_name, expire_time, is_permanent) VALUES (?, ?, ?, ?)")) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, playerUUID.toString());
             stmt.setString(2, restrictionName);
             stmt.setLong(3, expireTime);

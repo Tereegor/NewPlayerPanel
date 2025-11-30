@@ -1,10 +1,30 @@
-# Language / Язык (ru, en)
+# NewPlayerPanel Configuration
+
+# Language (ru, en)
 language: ru
 
 # Storage type
-# database - SQLite database (plugins/NewPlayerPanel/database.db)
-# json - JSON files (plugins/NewPlayerPanel/data/)
-storage: database
+# Available options:
+#   YAML   - JSON/YAML files in plugins/NewPlayerPanel/data/
+#   H2     - Local H2/SQLite database (plugins/NewPlayerPanel/database.db)
+#   MYSQL  - MySQL database (requires configuration below)
+#   MARIADB - MariaDB database (requires configuration below)
+storage: H2
+
+# Database settings (only for MYSQL/MARIADB)
+database:
+  host: localhost
+  port: 3306
+  database: newplayerpanel
+  username: root
+  password: ""
+  # HikariCP connection pool settings
+  pool:
+    maximum-pool-size: 10
+    minimum-idle: 2
+    connection-timeout: 30000
+    idle-timeout: 600000
+    max-lifetime: 1800000
 
 # Villager Tracker settings
 villager-tracker:

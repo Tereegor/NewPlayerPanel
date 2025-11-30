@@ -13,7 +13,7 @@ public class RestrictionsModule {
         restrictionsManager.loadRestrictions();
         
         plugin.getServer().getPluginManager().registerEvents(
-            new RestrictionsListener(restrictionsManager, messageManager), plugin);
+            new RestrictionsListener(restrictionsManager, messageManager, plugin), plugin);
         
         if (plugin.getCommand("restrict") != null) {
             RestrictCommand restrictCommand = new RestrictCommand(restrictionsManager, messageManager);
@@ -31,6 +31,10 @@ public class RestrictionsModule {
             plugin.getCommand("restrictions").setExecutor(
                 new RestrictionsCommand(restrictionsManager, messageManager));
         }
+    }
+    
+    public void reload() {
+        restrictionsManager.reloadRestrictions();
     }
     
     public void onDisable() {

@@ -82,6 +82,37 @@ public class Restriction {
         return new Restriction(name, type, actions, items, entities, commands, timeSeconds, isDefault);
     }
     
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("name", name);
+        map.put("type", type.name());
+        map.put("actions", String.join(",", actions));
+        
+        switch (type) {
+            case EQUIPMENT:
+            case ITEM:
+                if (!items.isEmpty()) {
+                    map.put("item", items);
+                }
+                break;
+            case ENTITY:
+                if (!entities.isEmpty()) {
+                    map.put("entity", entities);
+                }
+                break;
+            case COMMAND:
+                if (!commands.isEmpty()) {
+                    map.put("command", commands);
+                }
+                break;
+        }
+        
+        map.put("time", timeSeconds);
+        map.put("default", isDefault);
+        
+        return map;
+    }
+    
     public String getName() {
         return name;
     }
@@ -121,4 +152,3 @@ public class Restriction {
         COMMAND
     }
 }
-

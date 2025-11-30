@@ -39,12 +39,12 @@ public class VillagerDataManager {
         return storageProvider.clearOldVillagerDeaths(olderThanTimestamp);
     }
     
-    // Legacy methods for compatibility
+    public void reload() {
+    }
+    
     public void loadData() {
-        // Data is loaded from storage on demand
     }
     
     public void saveData() {
-        // Data is saved to storage immediately
     }
 }

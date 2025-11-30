@@ -6,8 +6,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.*;
@@ -98,9 +101,112 @@ public class RestrictionsManager {
     
     public void saveRestrictions() {
         try {
-            restrictionsConfig.save(restrictionsFile);
+            Map<String, Object> root = new LinkedHashMap<>();
+            List<Map<String, Object>> restrictionsList = new ArrayList<>();
+            
+            for (Restriction r : restrictions) {
+                Map<String, Object> restrictionMap = r.toMap();
+                restrictionsList.add(restrictionMap);
+            }
+            
+            root.put("restrictions", restrictionsList);
+            
+            DumperOptions options = new DumperOptions();
+            options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+            options.setPrettyFlow(true);
+            options.setIndent(2);
+            options.setDefaultScalarStyle(DumperOptions.ScalarStyle.PLAIN);
+            options.setSplitLines(false);
+            options.setWidth(Integer.MAX_VALUE);
+            
+            Yaml yaml = new Yaml(options);
+            String yamlString = yaml.dump(root);
+            
+            yamlString = formatYamlCompact(yamlString);
+            
+            try (FileWriter writer = new FileWriter(restrictionsFile)) {
+                writer.write(yamlString);
+            }
         } catch (Exception e) {
             plugin.getLogger().warning("Failed to save restrictions.yml: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    private String formatYamlCompact(String yaml) {
+        String[] lines = yaml.split("\n");
+        StringBuilder result = new StringBuilder();
+        
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
+            
+            if (line.trim().startsWith("item:") || line.trim().startsWith("entity:") || line.trim().startsWith("command:")) {
+                if (i + 1 < lines.length && lines[i + 1].trim().startsWith("- ")) {
+                    List<String> items = new ArrayList<>();
+                    int j = i + 1;
+                    while (j < lines.length && lines[j].trim().startsWith("- ")) {
+                        items.add(lines[j].trim().substring(2));
+                        j++;
+                    }
+                    
+                    if (items.size() == 1) {
+                        result.append(line.replace(":", "")).append(": [").append(items.get(0)).append("]\n");
+                    } else {
+                        result.append(line).append("\n");
+                        for (String item : items) {
+                            result.append("  - ").append(item).append("\n");
+                        }
+                    }
+                    
+                    i = j - 1;
+                    continue;
+                }
+            }
+            
+            result.append(line).append("\n");
+        }
+        
+        return result.toString();
+    }
+    
+    public boolean addNewRestriction(String name, String type, String actionsStr, List<String> targets, int timeSeconds, boolean isDefault) {
+        if (getRestrictionByName(name) != null) {
+            return false;
+        }
+        
+        try {
+            Restriction.RestrictionType restrictionType = Restriction.RestrictionType.valueOf(type);
+            
+            Set<String> actions = new HashSet<>();
+            for (String action : actionsStr.split(",")) {
+                actions.add(action.trim().toUpperCase());
+            }
+            
+            List<String> items = null;
+            List<String> entities = null;
+            List<String> commands = null;
+            
+            switch (restrictionType) {
+                case EQUIPMENT:
+                case ITEM:
+                    items = new ArrayList<>(targets);
+                    break;
+                case ENTITY:
+                    entities = new ArrayList<>(targets);
+                    break;
+                case COMMAND:
+                    commands = new ArrayList<>(targets);
+                    break;
+            }
+            
+            Restriction newRestriction = new Restriction(name, restrictionType, actions, items, entities, commands, timeSeconds, isDefault);
+            restrictions.add(newRestriction);
+            saveRestrictions();
+            
+            return true;
+        } catch (Exception e) {
+            plugin.getLogger().warning("Error creating restriction: " + e.getMessage());
+            return false;
         }
     }
     
@@ -164,6 +270,12 @@ public class RestrictionsManager {
         return false;
     }
     
+    private long getPlayerFirstPlayed(UUID playerUUID) {
+        org.bukkit.OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerUUID);
+        long firstPlayed = offlinePlayer.getFirstPlayed();
+        return firstPlayed > 0 ? firstPlayed : System.currentTimeMillis();
+    }
+    
     public boolean shouldApplyDefaultRestriction(UUID playerUUID, Restriction restriction) {
         if (!restriction.isDefault()) {
             return false;
@@ -179,11 +291,12 @@ public class RestrictionsManager {
             return true;
         }
         
-        long elapsedSeconds = (System.currentTimeMillis() - serverStartTime) / 1000L;
+        long playerFirstPlayed = getPlayerFirstPlayed(playerUUID);
+        long elapsedSeconds = (System.currentTimeMillis() - playerFirstPlayed) / 1000L;
         return elapsedSeconds < timeSeconds;
     }
     
-    public long getDefaultRestrictionRemainingTime(String restrictionName) {
+    public long getDefaultRestrictionRemainingTime(UUID playerUUID, String restrictionName) {
         Restriction restriction = getRestrictionByName(restrictionName);
         if (restriction == null || !restriction.isDefault()) {
             return 0;
@@ -195,7 +308,8 @@ public class RestrictionsManager {
             return -1;
         }
         
-        long elapsedSeconds = (System.currentTimeMillis() - serverStartTime) / 1000L;
+        long playerFirstPlayed = getPlayerFirstPlayed(playerUUID);
+        long elapsedSeconds = (System.currentTimeMillis() - playerFirstPlayed) / 1000L;
         long remaining = timeSeconds - elapsedSeconds;
         return remaining > 0 ? remaining : 0;
     }
@@ -208,7 +322,7 @@ public class RestrictionsManager {
             }
         }
         
-        return getDefaultRestrictionRemainingTime(restrictionName);
+        return getDefaultRestrictionRemainingTime(playerUUID, restrictionName);
     }
     
     public boolean isRestricted(UUID playerUUID, Restriction restriction) {
@@ -225,6 +339,16 @@ public class RestrictionsManager {
         return new ArrayList<>();
     }
     
+    public List<Restriction> getActiveDefaultRestrictions(UUID playerUUID) {
+        List<Restriction> activeDefaults = new ArrayList<>();
+        for (Restriction restriction : restrictions) {
+            if (shouldApplyDefaultRestriction(playerUUID, restriction)) {
+                activeDefaults.add(restriction);
+            }
+        }
+        return activeDefaults;
+    }
+    
     public void reloadRestrictions() {
         loadRestrictions();
     }
@@ -237,5 +361,9 @@ public class RestrictionsManager {
     
     public MessageManager getMessageManager() {
         return messageManager;
+    }
+    
+    public long getServerStartTime() {
+        return serverStartTime;
     }
 }

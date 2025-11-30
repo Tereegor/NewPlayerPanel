@@ -21,8 +21,11 @@ public class VillagerTrackerModule {
         }
     }
     
+    public void reload() {
+        dataManager.reload();
+    }
+    
     public void onDisable() {
-        // No longer needed - data is saved to storage immediately
     }
     
     public VillagerDataManager getDataManager() {
