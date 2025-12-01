@@ -267,13 +267,17 @@ public class HistoryCommand implements CommandExecutor, TabCompleter {
             }
         } else if (args.length == 2) {
             if (args[0].equalsIgnoreCase("purge")) {
-                completions.add("1h");
-                completions.add("1d");
-                completions.add("7d");
-                completions.add("30d");
+                String input = args[1].toLowerCase();
+                String[] timeOptions = {"1h", "1d", "7d", "30d"};
+                for (String option : timeOptions) {
+                    if (option.toLowerCase().startsWith(input)) {
+                        completions.add(option);
+                    }
+                }
             } else if (args[0].equalsIgnoreCase("coords")) {
+                String input = args[1].toLowerCase();
                 for (Player player : Bukkit.getOnlinePlayers()) {
-                    if (player.getName().toLowerCase().startsWith(args[1].toLowerCase())) {
+                    if (player.getName().toLowerCase().startsWith(input)) {
                         completions.add(player.getName());
                     }
                 }

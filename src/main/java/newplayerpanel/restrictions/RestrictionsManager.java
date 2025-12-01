@@ -151,14 +151,15 @@ public class RestrictionsManager {
                         j++;
                     }
                     
-                    if (items.size() == 1) {
-                        result.append(line.replace(":", "")).append(": [").append(items.get(0)).append("]\n");
-                    } else {
-                        result.append(line).append("\n");
-                        for (String item : items) {
-                            result.append("  - ").append(item).append("\n");
+                    String fieldName = line.trim().replace(":", "");
+                    result.append(fieldName).append(": [");
+                    for (int k = 0; k < items.size(); k++) {
+                        if (k > 0) {
+                            result.append(", ");
                         }
+                        result.append(items.get(k));
                     }
+                    result.append("]\n");
                     
                     i = j - 1;
                     continue;

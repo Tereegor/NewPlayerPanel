@@ -91,11 +91,13 @@ public class RestrictCommand implements CommandExecutor, TabCompleter {
                 }
             }
         } else if (args.length == 3) {
-            completions.add("0");
-            completions.add("-1");
-            completions.add("1h");
-            completions.add("1d");
-            completions.add("7d");
+            String input = args[2].toLowerCase();
+            String[] timeOptions = {"0", "-1", "1h", "1d", "7d"};
+            for (String option : timeOptions) {
+                if (option.toLowerCase().startsWith(input)) {
+                    completions.add(option);
+                }
+            }
         }
         
         return completions;

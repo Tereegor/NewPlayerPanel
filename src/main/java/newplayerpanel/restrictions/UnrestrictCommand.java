@@ -74,9 +74,12 @@ public class UnrestrictCommand implements CommandExecutor, TabCompleter {
         } else if (args.length == 2) {
             Player targetPlayer = Bukkit.getPlayer(args[0]);
             if (targetPlayer != null) {
-                completions.add("all");
+                String input = args[1].toLowerCase();
+                if ("all".startsWith(input)) {
+                    completions.add("all");
+                }
                 for (PlayerRestriction pr : restrictionsManager.getPlayerRestrictions(targetPlayer.getUniqueId())) {
-                    if (pr.getRestrictionName().toLowerCase().startsWith(args[1].toLowerCase())) {
+                    if (pr.getRestrictionName().toLowerCase().startsWith(input)) {
                         completions.add(pr.getRestrictionName());
                     }
                 }

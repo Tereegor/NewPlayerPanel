@@ -128,49 +128,72 @@ public class NPPCommand implements CommandExecutor, TabCompleter {
             }
         } else if (args.length >= 2 && args[0].equalsIgnoreCase("addrestriction")) {
             if (args.length == 2) {
-                completions.add("<name>");
             } else if (args.length == 3) {
+                String input = args[2].toLowerCase();
                 for (String type : RESTRICTION_TYPES) {
-                    if (type.toLowerCase().startsWith(args[2].toLowerCase())) {
+                    if (type.toLowerCase().startsWith(input)) {
                         completions.add(type);
                     }
                 }
             } else if (args.length == 4) {
+                String input = args[3].toLowerCase();
                 for (String action : ACTIONS) {
-                    if (action.toLowerCase().startsWith(args[3].toLowerCase())) {
+                    if (action.toLowerCase().startsWith(input)) {
                         completions.add(action);
                     }
                 }
-                completions.add("DAMAGE,USE");
-                completions.add("USE,DROP");
+                if ("damage,use".startsWith(input)) {
+                    completions.add("DAMAGE,USE");
+                }
+                if ("use,drop".startsWith(input)) {
+                    completions.add("USE,DROP");
+                }
             } else {
                 String type = args[2].toUpperCase();
                 String lastArg = args[args.length - 1].toLowerCase();
                 
                 if (type.equals("ITEM") || type.equals("EQUIPMENT")) {
-                    if (lastArg.isEmpty() || "minecraft:".startsWith(lastArg)) {
-                        completions.add("minecraft:diamond_sword");
-                        completions.add("minecraft:elytra");
-                        completions.add("minecraft:tnt");
+                    if (lastArg.isEmpty() || lastArg.startsWith("minecraft:")) {
+                        String[] examples = {"minecraft:diamond_sword", "minecraft:elytra", "minecraft:tnt"};
+                        for (String example : examples) {
+                            if (example.toLowerCase().startsWith(lastArg)) {
+                                completions.add(example);
+                            }
+                        }
                     }
                 } else if (type.equals("ENTITY")) {
-                    if (lastArg.isEmpty() || "minecraft:".startsWith(lastArg)) {
-                        completions.add("minecraft:villager");
-                        completions.add("minecraft:player");
+                    if (lastArg.isEmpty() || lastArg.startsWith("minecraft:")) {
+                        String[] examples = {"minecraft:villager", "minecraft:player"};
+                        for (String example : examples) {
+                            if (example.toLowerCase().startsWith(lastArg)) {
+                                completions.add(example);
+                            }
+                        }
                     }
                 } else if (type.equals("COMMAND")) {
-                    completions.add("/tp");
-                    completions.add("/gamemode");
+                    String[] examples = {"/tp", "/gamemode"};
+                    for (String example : examples) {
+                        if (example.toLowerCase().startsWith(lastArg)) {
+                            completions.add(example);
+                        }
+                    }
                 }
                 
-                if ("time:".startsWith(lastArg)) {
-                    completions.add("time:-1");
-                    completions.add("time:3600");
-                    completions.add("time:28800");
+                if (lastArg.isEmpty() || lastArg.startsWith("time:")) {
+                    String[] timeOptions = {"time:-1", "time:3600", "time:28800"};
+                    for (String option : timeOptions) {
+                        if (option.toLowerCase().startsWith(lastArg)) {
+                            completions.add(option);
+                        }
+                    }
                 }
-                if ("default:".startsWith(lastArg)) {
-                    completions.add("default:true");
-                    completions.add("default:false");
+                if (lastArg.isEmpty() || lastArg.startsWith("default:")) {
+                    String[] defaultOptions = {"default:true", "default:false"};
+                    for (String option : defaultOptions) {
+                        if (option.toLowerCase().startsWith(lastArg)) {
+                            completions.add(option);
+                        }
+                    }
                 }
             }
         }
