@@ -253,6 +253,9 @@ public class RestrictionsListener implements Listener {
     
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuit(PlayerQuitEvent event) {
-        restrictionsManager.clearAllCancelledDefaultRestrictions(event.getPlayer().getUniqueId());
+        Player player = event.getPlayer();
+        if (player != null) {
+            restrictionsManager.clearAllCancelledDefaultRestrictions(player.getUniqueId());
+        }
     }
 }
