@@ -138,7 +138,7 @@ public class MessageManager {
     
     public Component createClickableCoordsComponent(String world, double x, double y, double z) {
         String coords = String.format("%.0f, %.0f, %.0f", x, y, z);
-        String command = String.format("/tp %.0f %.0f %.0f", x, y, z);
+        String command = String.format("/tp @s %.0f %.0f %.0f", x, y, z);
         
         String rawText = getRaw("tracker-entry-coords-click");
         rawText = rawText.replace("{coords}", coords);

@@ -24,6 +24,7 @@ public class RestrictionsManager {
     private FileConfiguration restrictionsConfig;
     private List<Restriction> restrictions;
     private final Map<UUID, List<PlayerRestriction>> playerRestrictionsCache;
+    private final Map<UUID, Set<String>> cancelledDefaultRestrictions;
     private int cleanupTaskId;
     private long serverStartTime;
     
@@ -33,6 +34,7 @@ public class RestrictionsManager {
         this.messageManager = messageManager;
         this.restrictions = new ArrayList<>();
         this.playerRestrictionsCache = new ConcurrentHashMap<>();
+        this.cancelledDefaultRestrictions = new ConcurrentHashMap<>();
         this.restrictionsFile = new File(plugin.getDataFolder(), "restrictions.yml");
         this.serverStartTime = System.currentTimeMillis();
     }
@@ -327,6 +329,24 @@ public class RestrictionsManager {
         storageProvider.removePlayerRestriction(playerUUID, restrictionName);
     }
     
+    public void cancelDefaultRestriction(UUID playerUUID, String restrictionName) {
+        cancelledDefaultRestrictions.computeIfAbsent(playerUUID, k -> new HashSet<>()).add(restrictionName);
+    }
+    
+    public void removeCancelledDefaultRestriction(UUID playerUUID, String restrictionName) {
+        Set<String> cancelled = cancelledDefaultRestrictions.get(playerUUID);
+        if (cancelled != null) {
+            cancelled.remove(restrictionName);
+            if (cancelled.isEmpty()) {
+                cancelledDefaultRestrictions.remove(playerUUID);
+            }
+        }
+    }
+    
+    public void clearAllCancelledDefaultRestrictions(UUID playerUUID) {
+        cancelledDefaultRestrictions.remove(playerUUID);
+    }
+    
     public boolean hasPlayerRestriction(UUID playerUUID, String restrictionName) {
         List<PlayerRestriction> playerRests = playerRestrictionsCache.get(playerUUID);
         if (playerRests != null) {
@@ -369,6 +389,11 @@ public class RestrictionsManager {
         }
         
         if (hasPlayerRestriction(playerUUID, restriction.getName())) {
+            return false;
+        }
+        
+        Set<String> cancelled = cancelledDefaultRestrictions.get(playerUUID);
+        if (cancelled != null && cancelled.contains(restriction.getName())) {
             return false;
         }
         

@@ -44,18 +44,48 @@ public class UnrestrictCommand implements CommandExecutor, TabCompleter {
         
         if (args[1].equalsIgnoreCase("all")) {
             List<PlayerRestriction> active = restrictionsManager.getPlayerRestrictions(playerUUID);
-            if (active.isEmpty()) {
+            List<Restriction> activeDefaults = restrictionsManager.getActiveDefaultRestrictions(playerUUID);
+            
+            if (active.isEmpty() && activeDefaults.isEmpty()) {
                 sender.sendMessage(messageManager.get("restrictions-no-active"));
                 return true;
             }
             
             active.forEach(pr -> restrictionsManager.removePlayerRestriction(playerUUID, pr.getRestrictionName()));
+            
+            for (Restriction restriction : activeDefaults) {
+                restrictionsManager.cancelDefaultRestriction(playerUUID, restriction.getName());
+            }
+            
             sender.sendMessage(messageManager.get("restrictions-removed-all"));
             targetPlayer.sendMessage(messageManager.get("restrictions-notify-removed-all"));
         } else {
-            restrictionsManager.removePlayerRestriction(playerUUID, args[1]);
+            String restrictionName = args[1];
+            Restriction restriction = restrictionsManager.getRestrictionByName(restrictionName);
+            
+            if (restriction == null) {
+                sender.sendMessage(messageManager.get("restrictions-not-found"));
+                return true;
+            }
+            
+            boolean hasPlayerRestriction = restrictionsManager.hasPlayerRestriction(playerUUID, restrictionName);
+            boolean hasDefaultRestriction = restrictionsManager.shouldApplyDefaultRestriction(playerUUID, restriction);
+            
+            if (!hasPlayerRestriction && !hasDefaultRestriction) {
+                sender.sendMessage(messageManager.get("restrictions-no-active"));
+                return true;
+            }
+            
+            if (hasPlayerRestriction) {
+                restrictionsManager.removePlayerRestriction(playerUUID, restrictionName);
+            }
+            
+            if (hasDefaultRestriction) {
+                restrictionsManager.cancelDefaultRestriction(playerUUID, restrictionName);
+            }
+            
             sender.sendMessage(messageManager.get("restrictions-removed", "player", targetPlayer.getName()));
-            targetPlayer.sendMessage(messageManager.get("restrictions-notify-removed", "restriction", args[1]));
+            targetPlayer.sendMessage(messageManager.get("restrictions-notify-removed", "restriction", restrictionName));
         }
         
         return true;
