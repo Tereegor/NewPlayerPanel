@@ -84,25 +84,35 @@ public class Restriction {
     
     public Map<String, Object> toMap() {
         Map<String, Object> map = new LinkedHashMap<>();
+        
         map.put("name", name);
         map.put("type", type.name());
-        map.put("actions", String.join(",", actions));
+        
+        List<String> actionsList = new ArrayList<>(actions);
+        actionsList.sort(String::compareToIgnoreCase);
+        map.put("actions", actionsList);
         
         switch (type) {
             case EQUIPMENT:
             case ITEM:
                 if (!items.isEmpty()) {
-                    map.put("item", items);
+                    List<String> sortedItems = new ArrayList<>(items);
+                    sortedItems.sort(String::compareToIgnoreCase);
+                    map.put("item", sortedItems);
                 }
                 break;
             case ENTITY:
                 if (!entities.isEmpty()) {
-                    map.put("entity", entities);
+                    List<String> sortedEntities = new ArrayList<>(entities);
+                    sortedEntities.sort(String::compareToIgnoreCase);
+                    map.put("entity", sortedEntities);
                 }
                 break;
             case COMMAND:
                 if (!commands.isEmpty()) {
-                    map.put("command", commands);
+                    List<String> sortedCommands = new ArrayList<>(commands);
+                    sortedCommands.sort(String::compareToIgnoreCase);
+                    map.put("command", sortedCommands);
                 }
                 break;
         }

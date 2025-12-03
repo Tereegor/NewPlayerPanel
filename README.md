@@ -1,4 +1,4 @@
-# NewPlayerPanel v2.1.3
+# NewPlayerPanel v3.0.0
 
 ## Возможности
 
@@ -137,6 +137,7 @@ database:
 villager-tracker:
   only-traded: true
   notify-enabled: true
+  save-debug-files: false
 ```
 
 ### Файл конфигурации ограничений (`restrictions.yml`)
@@ -272,6 +273,8 @@ database:
 - Совместимость с функциями MariaDB
 - Высокая производительность
 - Надежность корпоративного уровня
+- Оптимизированное подключение с правильными параметрами
+- Автоматическая проверка и добавление колонок для обратной совместимости
 
 **Конфигурация:**
 ```yaml
@@ -282,6 +285,12 @@ database:
   database: newplayerpanel
   username: root
   password: your_password
+  pool:
+    maximum-pool-size: 10
+    minimum-idle: 2
+    connection-timeout: 30000
+    idle-timeout: 600000
+    max-lifetime: 1800000
 ```
 
 ## Совместимость
@@ -314,4 +323,4 @@ database:
 
 - **Автор:** Math_Tereegor
 - **Помощь и поддержка:** MISQZY и 6oJIeH
-- **Версия плагина:** 2.1.3
+- **Версия плагина:** 3.0.0

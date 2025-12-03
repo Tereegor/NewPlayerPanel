@@ -16,7 +16,7 @@ public class NPPCommand implements CommandExecutor, TabCompleter {
     private final MessageManager messageManager;
     
     private static final List<String> RESTRICTION_TYPES = Arrays.asList("EQUIPMENT", "ITEM", "ENTITY", "COMMAND");
-    private static final List<String> ACTIONS = Arrays.asList("DAMAGE", "USE", "DROP", "EQUIP", "EXECUTE");
+    private static final List<String> ACTIONS = Arrays.asList("DAMAGE", "USE", "DROP", "PICKUP", "EQUIP", "EXECUTE");
     
     public NPPCommand(NewPlayerPanel plugin, MessageManager messageManager) {
         this.plugin = plugin;

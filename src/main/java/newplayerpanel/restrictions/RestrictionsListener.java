@@ -12,6 +12,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -97,7 +98,7 @@ public class RestrictionsListener implements Listener {
         if (restrictionsManager.isRestricted(player.getUniqueId(), restriction)) {
             long remaining = restrictionsManager.getRestrictionRemainingTime(player.getUniqueId(), restriction.getName());
             String timeFormatted = TimeUtil.formatTimeLocalized(remaining, messageManager);
-            String message = messageManager.get(messageKey, "time", timeFormatted);
+            net.kyori.adventure.text.Component message = messageManager.getComponent(messageKey, "time", timeFormatted);
             ActionBarUtil.sendActionBar(player, message);
             return true;
         }
@@ -199,6 +200,29 @@ public class RestrictionsListener implements Listener {
                 restriction.getItems().contains(itemType)) {
                 
                 if (checkRestriction(player, restriction, "restrictions-blocked-drop")) {
+                    event.setCancelled(true);
+                    return;
+                }
+                break;
+            }
+        }
+    }
+    
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onPlayerPickupItem(EntityPickupItemEvent event) {
+        if (!(event.getEntity() instanceof Player)) {
+            return;
+        }
+        
+        Player player = (Player) event.getEntity();
+        String itemType = event.getItem().getItemStack().getType().getKey().toString();
+        
+        for (Restriction restriction : restrictionsManager.getRestrictions()) {
+            if (restriction.getType() == Restriction.RestrictionType.ITEM &&
+                restriction.getActions().contains("PICKUP") &&
+                restriction.getItems().contains(itemType)) {
+                
+                if (checkRestriction(player, restriction, "restrictions-blocked-pickup")) {
                     event.setCancelled(true);
                     return;
                 }

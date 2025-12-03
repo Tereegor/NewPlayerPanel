@@ -48,7 +48,7 @@ public class JsonStorage implements StorageProvider {
             return true;
         } catch (Exception e) {
             plugin.getLogger().severe("Failed to initialize JSON storage: " + e.getMessage());
-            e.printStackTrace();
+            plugin.getLogger().severe("Stack trace: " + java.util.Arrays.toString(e.getStackTrace()));
             return false;
         }
     }

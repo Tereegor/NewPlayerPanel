@@ -22,6 +22,7 @@ commands:
       /history coords - records at your coordinates
       /history <player> <x> <y> <z> - combined search
       /history purge <time> - purge old records (7d, 30d, 1h...)
+      /history summon <number> - summon villager from last viewed records
     permission: newplayerpanel.history
     permission-message: You don't have permission to use this command!
   restrict:
@@ -49,6 +50,9 @@ permissions:
     default: op
   newplayerpanel.history.purge:
     description: Allows purging villager death history
+    default: op
+  newplayerpanel.history.summon:
+    description: Allows summoning villagers from death history
     default: op
   newplayerpanel.notify:
     description: Receive notifications about traded villager deaths

@@ -8,11 +8,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.*;
@@ -79,7 +76,25 @@ public class RestrictionsManager {
     
     private void loadPlayerRestrictionsFromStorage() {
         playerRestrictionsCache.clear();
-        playerRestrictionsCache.putAll(storageProvider.loadPlayerRestrictions());
+        Map<UUID, List<PlayerRestriction>> loaded = storageProvider.loadPlayerRestrictions();
+        
+        for (Map.Entry<UUID, List<PlayerRestriction>> entry : loaded.entrySet()) {
+            List<PlayerRestriction> validRestrictions = new ArrayList<>();
+            for (PlayerRestriction pr : entry.getValue()) {
+                Restriction restriction = getRestrictionByName(pr.getRestrictionName());
+                if (restriction != null) {
+                    validRestrictions.add(pr);
+                } else {
+                    plugin.getLogger().warning("Player restriction '" + pr.getRestrictionName() + 
+                        "' for player " + entry.getKey() + " references non-existent restriction, removing it.");
+                    storageProvider.removePlayerRestriction(entry.getKey(), pr.getRestrictionName());
+                }
+            }
+            if (!validRestrictions.isEmpty()) {
+                playerRestrictionsCache.put(entry.getKey(), validRestrictions);
+            }
+        }
+        
         plugin.getLogger().info("Loaded " + playerRestrictionsCache.size() + " players with active restrictions.");
     }
     
@@ -103,73 +118,124 @@ public class RestrictionsManager {
     
     public void saveRestrictions() {
         try {
-            Map<String, Object> root = new LinkedHashMap<>();
-            List<Map<String, Object>> restrictionsList = new ArrayList<>();
-            
-            for (Restriction r : restrictions) {
-                Map<String, Object> restrictionMap = r.toMap();
-                restrictionsList.add(restrictionMap);
-            }
-            
-            root.put("restrictions", restrictionsList);
-            
-            DumperOptions options = new DumperOptions();
-            options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-            options.setPrettyFlow(true);
-            options.setIndent(2);
-            options.setDefaultScalarStyle(DumperOptions.ScalarStyle.PLAIN);
-            options.setSplitLines(false);
-            options.setWidth(Integer.MAX_VALUE);
-            
-            Yaml yaml = new Yaml(options);
-            String yamlString = yaml.dump(root);
-            
-            yamlString = formatYamlCompact(yamlString);
-            
-            try (FileWriter writer = new FileWriter(restrictionsFile)) {
-                writer.write(yamlString);
-            }
-        } catch (Exception e) {
-            plugin.getLogger().warning("Failed to save restrictions.yml: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-    
-    private String formatYamlCompact(String yaml) {
-        String[] lines = yaml.split("\n");
-        StringBuilder result = new StringBuilder();
-        
-        for (int i = 0; i < lines.length; i++) {
-            String line = lines[i];
-            
-            if (line.trim().startsWith("item:") || line.trim().startsWith("entity:") || line.trim().startsWith("command:")) {
-                if (i + 1 < lines.length && lines[i + 1].trim().startsWith("- ")) {
-                    List<String> items = new ArrayList<>();
-                    int j = i + 1;
-                    while (j < lines.length && lines[j].trim().startsWith("- ")) {
-                        items.add(lines[j].trim().substring(2));
-                        j++;
-                    }
-                    
-                    String fieldName = line.trim().replace(":", "");
-                    result.append(fieldName).append(": [");
-                    for (int k = 0; k < items.size(); k++) {
-                        if (k > 0) {
-                            result.append(", ");
+            List<String> headerComments = new ArrayList<>();
+            if (restrictionsFile.exists()) {
+                try (java.io.BufferedReader reader = java.nio.file.Files.newBufferedReader(
+                        restrictionsFile.toPath(), java.nio.charset.StandardCharsets.UTF_8)) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        if (line.trim().startsWith("restrictions:")) {
+                            break;
                         }
-                        result.append(items.get(k));
+                        if (line.trim().startsWith("#") || line.trim().isEmpty()) {
+                            headerComments.add(line);
+                        }
                     }
-                    result.append("]\n");
-                    
-                    i = j - 1;
-                    continue;
                 }
             }
             
-            result.append(line).append("\n");
+            if (headerComments.isEmpty()) {
+                headerComments.add("# Restrictions configuration");
+                headerComments.add("#");
+                headerComments.add("# Each restriction has:");
+                headerComments.add("# - name: unique identifier");
+                headerComments.add("# - type: EQUIPMENT, ITEM, ENTITY, or COMMAND");
+                headerComments.add("# - actions: comma-separated or list (DAMAGE, USE, DROP, PICKUP, EQUIP, EXECUTE)");
+                headerComments.add("# - item/entity/command: list of targets");
+                headerComments.add("# - time: ");
+                headerComments.add("#   -1 = permanent (always active)");
+                headerComments.add("#   0 = permanent (always active, same as -1)");
+                headerComments.add("#   >0 = active for N seconds since server start");
+                headerComments.add("# - default: true = applies to all players by default");
+                        headerComments.add("");
+                    }
+                    
+                    List<Restriction> sortedRestrictions = new ArrayList<>(restrictions);
+                    sortedRestrictions.sort((a, b) -> {
+                        if (a.isDefault() != b.isDefault()) {
+                            return b.isDefault() ? 1 : -1;
+                        }
+                        return a.getName().compareToIgnoreCase(b.getName());
+                    });
+                    
+                    StringBuilder content = new StringBuilder();
+                    
+                    for (String comment : headerComments) {
+                        content.append(comment).append("\n");
+                    }
+                    
+                    content.append("restrictions:\n");
+                    
+                    for (int i = 0; i < sortedRestrictions.size(); i++) {
+                Restriction restriction = sortedRestrictions.get(i);
+                content.append("  - name: ").append(restriction.getName()).append("\n");
+                content.append("    type: ").append(restriction.getType().name()).append("\n");
+                
+                List<String> actionsList = new ArrayList<>(restriction.getActions());
+                actionsList.sort(String::compareToIgnoreCase);
+                if (actionsList.size() == 1) {
+                    content.append("    actions: ").append(actionsList.get(0)).append("\n");
+                } else {
+                    content.append("    actions:\n");
+                    for (String action : actionsList) {
+                        content.append("      - ").append(action).append("\n");
+                    }
+                }
+                
+                switch (restriction.getType()) {
+                    case EQUIPMENT:
+                    case ITEM:
+                        if (!restriction.getItems().isEmpty()) {
+                            List<String> sortedItems = new ArrayList<>(restriction.getItems());
+                            sortedItems.sort(String::compareToIgnoreCase);
+                            content.append("    item:\n");
+                            for (String item : sortedItems) {
+                                content.append("      - ").append(item).append("\n");
+                            }
+                        }
+                        break;
+                    case ENTITY:
+                        if (!restriction.getEntities().isEmpty()) {
+                            List<String> sortedEntities = new ArrayList<>(restriction.getEntities());
+                            sortedEntities.sort(String::compareToIgnoreCase);
+                            content.append("    entity:\n");
+                            for (String entity : sortedEntities) {
+                                content.append("      - ").append(entity).append("\n");
+                            }
+                        }
+                        break;
+                    case COMMAND:
+                        if (!restriction.getCommands().isEmpty()) {
+                            List<String> sortedCommands = new ArrayList<>(restriction.getCommands());
+                            sortedCommands.sort(String::compareToIgnoreCase);
+                            content.append("    command:\n");
+                            for (String command : sortedCommands) {
+                                content.append("      - ").append(command).append("\n");
+                            }
+                        }
+                        break;
+                }
+                
+                        content.append("    time: ").append(restriction.getTimeSeconds()).append("\n");
+                        content.append("    default: ").append(restriction.isDefault()).append("\n");
+                        
+                        if (i < sortedRestrictions.size() - 1) {
+                    content.append("\n");
+                }
+            }
+            
+            try (java.io.BufferedWriter writer = java.nio.file.Files.newBufferedWriter(
+                    restrictionsFile.toPath(), java.nio.charset.StandardCharsets.UTF_8,
+                    java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.TRUNCATE_EXISTING,
+                    java.nio.file.StandardOpenOption.WRITE)) {
+                writer.write(content.toString());
+            }
+            
+            plugin.getLogger().fine("Saved " + restrictions.size() + " restrictions to restrictions.yml");
+        } catch (Exception e) {
+            plugin.getLogger().severe("Failed to save restrictions.yml: " + e.getMessage());
+            plugin.getLogger().severe("Stack trace: " + java.util.Arrays.toString(e.getStackTrace()));
         }
-        
-        return result.toString();
     }
     
     public boolean addNewRestriction(String name, String type, String actionsStr, List<String> targets, int timeSeconds, boolean isDefault) {

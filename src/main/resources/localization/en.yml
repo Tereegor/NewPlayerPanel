@@ -43,6 +43,7 @@ messages:
   restrictions-blocked-damage: "&cYou cannot deal damage. Remaining: {time}"
   restrictions-blocked-item: "&cUsing this item is restricted. Remaining: {time}"
   restrictions-blocked-drop: "&cYou cannot drop this item. Remaining: {time}"
+  restrictions-blocked-pickup: "&cYou cannot pickup this item. Remaining: {time}"
   restrictions-blocked-command: "&cThis command is restricted. Remaining: {time}"
   
   # Villager Tracker
@@ -61,7 +62,14 @@ messages:
   tracker-coords-hover: "Click to teleport ({world})"
   tracker-entry-date: "  &7Date: &f{date}"
   tracker-entry-enchantments: "  &7Enchantments: &f{enchantments}"
+  tracker-entry-level: "  &7Level: &f{level}"
+  tracker-entry-trades-header: "  &7Trades:"
   tracker-shown-last: "&7Shown last {shown} records out of {total}"
+  tracker-summon-usage: "&cUsage: /history summon <number>"
+  tracker-summon-no-records: "&cNo records to summon. View history first."
+  tracker-summon-invalid-number: "&cInvalid record number! Available numbers from 1 to {max}"
+  tracker-summon-success: "&aVillager summoned from record #{number}!"
+  tracker-summon-error: "&cError summoning villager!"
   tracker-notify: "&c[VillagerTracker] &fPlayer &e{player} &fkilled villager type &b{type} &fin world &a{world} &fat coordinates "
   tracker-coords-usage: "&cError: For coordinate search specify X Y Z or use 'coords'"
   tracker-usage: "&7Usage: /history <player> or /history <x> <y> <z> or /history coords"

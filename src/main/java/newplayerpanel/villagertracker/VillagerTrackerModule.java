@@ -15,7 +15,7 @@ public class VillagerTrackerModule {
             new VillagerDeathListener(plugin, dataManager, messageManager), plugin);
         
         if (plugin.getCommand("history") != null) {
-            HistoryCommand historyCommand = new HistoryCommand(dataManager, messageManager);
+            HistoryCommand historyCommand = new HistoryCommand(dataManager, messageManager, plugin);
             plugin.getCommand("history").setExecutor(historyCommand);
             plugin.getCommand("history").setTabCompleter(historyCommand);
         }

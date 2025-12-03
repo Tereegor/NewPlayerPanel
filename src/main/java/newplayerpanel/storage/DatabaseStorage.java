@@ -48,7 +48,7 @@ public class DatabaseStorage implements StorageProvider {
             
             if (storageType.equals("MARIADB")) {
                 jdbcUrl = "jdbc:mariadb://" + host + ":" + port + "/" + database + 
-                    "?characterEncoding=utf8&useUnicode=true";
+                    "?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=utf8mb4&useUnicode=true";
                 hikariConfig.setDriverClassName("org.mariadb.jdbc.Driver");
             } else {
                 hikariConfig.setDriverClassName("com.mysql.cj.jdbc.Driver");
@@ -80,27 +80,68 @@ public class DatabaseStorage implements StorageProvider {
             createTables();
             plugin.getLogger().info("Database connection established successfully.");
             return true;
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Failed to connect to database: " + e.getMessage());
+            plugin.getLogger().severe("SQL State: " + e.getSQLState());
+            plugin.getLogger().severe("Error Code: " + e.getErrorCode());
+            if (e.getCause() != null) {
+                plugin.getLogger().severe("Cause: " + e.getCause().getMessage());
+            }
+            return false;
         } catch (Exception e) {
             plugin.getLogger().severe("Failed to connect to database: " + e.getMessage());
-            e.printStackTrace();
+            plugin.getLogger().severe("Exception type: " + e.getClass().getName());
+            if (e.getCause() != null) {
+                plugin.getLogger().severe("Cause: " + e.getCause().getMessage());
+            }
             return false;
         }
     }
     
-    private void createTables() throws SQLException {
-        try (Connection conn = dataSource.getConnection(); Statement stmt = conn.createStatement()) {
+    private void addColumnIfNotExists(Connection conn, String tableName, String columnName, String columnDefinition) {
+        try {
             if (isMySQL) {
-                stmt.executeUpdate("""
-                    CREATE TABLE IF NOT EXISTS npp_messages (
-                        id INT AUTO_INCREMENT PRIMARY KEY,
-                        language VARCHAR(10) NOT NULL,
-                        message_key VARCHAR(255) NOT NULL,
-                        message_value TEXT NOT NULL,
-                        UNIQUE KEY unique_lang_key (language, message_key)
-                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-                """);
-                
-                stmt.executeUpdate("""
+                try (PreparedStatement checkStmt = conn.prepareStatement(
+                        "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS " +
+                        "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?")) {
+                    checkStmt.setString(1, tableName);
+                    checkStmt.setString(2, columnName);
+                    try (ResultSet rs = checkStmt.executeQuery()) {
+                        if (rs.next() && rs.getInt(1) == 0) {
+                            try (Statement alterStmt = conn.createStatement()) {
+                                alterStmt.executeUpdate("ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + columnDefinition);
+                                plugin.getLogger().info("Added column " + columnName + " to table " + tableName);
+                            }
+                        }
+                    }
+                }
+            } else {
+                try (Statement pragmaStmt = conn.createStatement();
+                     ResultSet rs = pragmaStmt.executeQuery("PRAGMA table_info(" + tableName + ")")) {
+                    boolean columnExists = false;
+                    while (rs.next()) {
+                        if (columnName.equalsIgnoreCase(rs.getString("name"))) {
+                            columnExists = true;
+                            break;
+                        }
+                    }
+                    if (!columnExists) {
+                        try (Statement alterStmt = conn.createStatement()) {
+                            alterStmt.executeUpdate("ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + columnDefinition);
+                            plugin.getLogger().info("Added column " + columnName + " to table " + tableName);
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().fine("Column " + columnName + " check/add failed: " + e.getMessage());
+        }
+    }
+    
+    private void createTables() throws SQLException {
+            try (Connection conn = dataSource.getConnection(); Statement stmt = conn.createStatement()) {
+                if (isMySQL) {
+                    stmt.executeUpdate("""
                     CREATE TABLE IF NOT EXISTS npp_villager_deaths (
                         id INT AUTO_INCREMENT PRIMARY KEY,
                         player_name VARCHAR(64) NOT NULL,
@@ -112,11 +153,18 @@ public class DatabaseStorage implements StorageProvider {
                         z DOUBLE NOT NULL,
                         timestamp BIGINT NOT NULL,
                         enchantments TEXT,
-                        INDEX idx_player (player_name),
-                        INDEX idx_coords (world, x, y, z),
-                        INDEX idx_timestamp (timestamp)
-                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                        trades TEXT,
+                        villager_level INT NOT NULL DEFAULT 1,
+                        INDEX idx_player_name (player_name),
+                        INDEX idx_player_uuid (player_uuid),
+                        INDEX idx_world_coords (world, x, y, z),
+                        INDEX idx_timestamp (timestamp),
+                        INDEX idx_player_timestamp (player_name, timestamp)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
                 """);
+                
+                addColumnIfNotExists(conn, "npp_villager_deaths", "trades", "TEXT");
+                addColumnIfNotExists(conn, "npp_villager_deaths", "villager_level", "INT NOT NULL DEFAULT 1");
                 
                 stmt.executeUpdate("""
                     CREATE TABLE IF NOT EXISTS npp_player_restrictions (
@@ -124,22 +172,14 @@ public class DatabaseStorage implements StorageProvider {
                         player_uuid VARCHAR(36) NOT NULL,
                         restriction_name VARCHAR(128) NOT NULL,
                         expire_time BIGINT NOT NULL,
-                        is_permanent TINYINT NOT NULL DEFAULT 0,
+                        is_permanent TINYINT(1) NOT NULL DEFAULT 0,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         UNIQUE KEY unique_player_restriction (player_uuid, restriction_name),
-                        INDEX idx_player_uuid (player_uuid)
-                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                        INDEX idx_player_uuid (player_uuid),
+                        INDEX idx_expire_time (expire_time, is_permanent)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
                 """);
             } else {
-                stmt.executeUpdate("""
-                    CREATE TABLE IF NOT EXISTS npp_messages (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        language TEXT NOT NULL,
-                        message_key TEXT NOT NULL,
-                        message_value TEXT NOT NULL,
-                        UNIQUE(language, message_key)
-                    )
-                """);
-                
                 stmt.executeUpdate("""
                     CREATE TABLE IF NOT EXISTS npp_villager_deaths (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -151,13 +191,20 @@ public class DatabaseStorage implements StorageProvider {
                         y REAL NOT NULL,
                         z REAL NOT NULL,
                         timestamp INTEGER NOT NULL,
-                        enchantments TEXT
+                        enchantments TEXT,
+                        trades TEXT,
+                        villager_level INTEGER NOT NULL DEFAULT 1
                     )
                 """);
                 
-                stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_player ON npp_villager_deaths(player_name)");
-                stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_coords ON npp_villager_deaths(world, x, y, z)");
+                addColumnIfNotExists(conn, "npp_villager_deaths", "trades", "TEXT");
+                addColumnIfNotExists(conn, "npp_villager_deaths", "villager_level", "INTEGER NOT NULL DEFAULT 1");
+                
+                stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_player_name ON npp_villager_deaths(player_name)");
+                stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_player_uuid ON npp_villager_deaths(player_uuid)");
+                stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_world_coords ON npp_villager_deaths(world, x, y, z)");
                 stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_timestamp ON npp_villager_deaths(timestamp)");
+                stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_player_timestamp ON npp_villager_deaths(player_name, timestamp)");
                 
                 stmt.executeUpdate("""
                     CREATE TABLE IF NOT EXISTS npp_player_restrictions (
@@ -166,11 +213,13 @@ public class DatabaseStorage implements StorageProvider {
                         restriction_name TEXT NOT NULL,
                         expire_time INTEGER NOT NULL,
                         is_permanent INTEGER NOT NULL DEFAULT 0,
+                        created_at INTEGER DEFAULT (strftime('%s', 'now')),
                         UNIQUE(player_uuid, restriction_name)
                     )
                 """);
                 
                 stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_player_uuid ON npp_player_restrictions(player_uuid)");
+                stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_expire_time ON npp_player_restrictions(expire_time, is_permanent)");
             }
         }
     }
@@ -185,71 +234,46 @@ public class DatabaseStorage implements StorageProvider {
     
     @Override
     public boolean messagesExist(String language) {
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("SELECT COUNT(*) FROM npp_messages WHERE language = ?")) {
-            stmt.setString(1, language);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
-            }
-        } catch (SQLException e) {
-            plugin.getLogger().warning("Error checking messages: " + e.getMessage());
-        }
         return false;
     }
     
     @Override
     public void saveMessage(String language, String key, String value) {
-        String sql = isMySQL 
-            ? "INSERT INTO npp_messages (language, message_key, message_value) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE message_value = VALUES(message_value)"
-            : "INSERT OR REPLACE INTO npp_messages (language, message_key, message_value) VALUES (?, ?, ?)";
-        
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, language);
-            stmt.setString(2, key);
-            stmt.setString(3, value);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            plugin.getLogger().warning("Error saving message: " + e.getMessage());
-        }
     }
     
     @Override
     public Map<String, String> loadMessages(String language) {
-        Map<String, String> messages = new HashMap<>();
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(
-                 "SELECT message_key, message_value FROM npp_messages WHERE language = ?")) {
-            stmt.setString(1, language);
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                messages.put(rs.getString("message_key"), rs.getString("message_value"));
-            }
-        } catch (SQLException e) {
-            plugin.getLogger().warning("Error loading messages: " + e.getMessage());
-        }
-        return messages;
+        return new HashMap<>();
     }
     
     @Override
     public void addVillagerDeath(VillagerDeathRecord record) {
+        String sql = "INSERT INTO npp_villager_deaths (player_name, player_uuid, villager_type, world, x, y, z, timestamp, enchantments, trades, villager_level) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(
-                 "INSERT INTO npp_villager_deaths (player_name, player_uuid, villager_type, world, x, y, z, timestamp, enchantments) " +
-                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, record.getPlayerName());
             stmt.setString(2, record.getPlayerUUID());
             stmt.setString(3, record.getVillagerType());
             stmt.setString(4, record.getWorld());
-            stmt.setDouble(5, record.getX());
-            stmt.setDouble(6, record.getY());
-            stmt.setDouble(7, record.getZ());
+            stmt.setDouble(5, Math.round(record.getX()));
+            stmt.setDouble(6, Math.round(record.getY()));
+            stmt.setDouble(7, Math.round(record.getZ()));
             stmt.setLong(8, record.getTimestamp());
-            stmt.setString(9, gson.toJson(record.getEnchantments()));
+            
+            String enchantmentsJson = record.getEnchantments().isEmpty() ? null : gson.toJson(record.getEnchantments());
+            stmt.setString(9, enchantmentsJson);
+            
+            String tradesJson = record.getTrades().isEmpty() ? null : gson.toJson(record.getTrades());
+            stmt.setString(10, tradesJson);
+            
+            stmt.setInt(11, record.getVillagerLevel());
+            
             stmt.executeUpdate();
         } catch (SQLException e) {
             plugin.getLogger().warning("Error saving villager death: " + e.getMessage());
+            plugin.getLogger().fine("Stack trace: " + java.util.Arrays.toString(e.getStackTrace()));
         }
     }
     
@@ -294,19 +318,24 @@ public class DatabaseStorage implements StorageProvider {
     @Override
     public int clearOldVillagerDeaths(long olderThanTimestamp) {
         try (Connection conn = dataSource.getConnection()) {
-            int count;
-            try (PreparedStatement stmt = conn.prepareStatement("SELECT COUNT(*) FROM npp_villager_deaths WHERE timestamp < ?")) {
+            int deleted;
+            try (PreparedStatement stmt = conn.prepareStatement(
+                    "DELETE FROM npp_villager_deaths WHERE timestamp < ?")) {
                 stmt.setLong(1, olderThanTimestamp);
-                ResultSet rs = stmt.executeQuery();
-                count = rs.next() ? rs.getInt(1) : 0;
+                deleted = stmt.executeUpdate();
             }
-            try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM npp_villager_deaths WHERE timestamp < ?")) {
-                stmt.setLong(1, olderThanTimestamp);
-                stmt.executeUpdate();
+            
+            if (!isMySQL) {
+                try (Statement stmt = conn.createStatement()) {
+                    stmt.executeUpdate("VACUUM");
+                } catch (SQLException e) {
+                }
             }
-            return count;
+            
+            return deleted;
         } catch (SQLException e) {
             plugin.getLogger().warning("Error clearing old villager deaths: " + e.getMessage());
+            plugin.getLogger().fine("Stack trace: " + java.util.Arrays.toString(e.getStackTrace()));
             return -1;
         }
     }
@@ -331,6 +360,27 @@ public class DatabaseStorage implements StorageProvider {
                         }
                     } catch (Exception ignored) {}
                 }
+                
+                List<Map<String, Object>> trades = new ArrayList<>();
+                try {
+                    String tradesJson = rs.getString("trades");
+                    if (tradesJson != null && !tradesJson.isEmpty()) {
+                        @SuppressWarnings("unchecked")
+                        List<Map<String, Object>> parsedTrades = gson.fromJson(tradesJson, List.class);
+                        if (parsedTrades != null) {
+                            trades = parsedTrades;
+                        }
+                    }
+                } catch (Exception ignored) {}
+                
+                int villagerLevel = 1;
+                try {
+                    villagerLevel = rs.getInt("villager_level");
+                    if (rs.wasNull()) {
+                        villagerLevel = 1;
+                    }
+                } catch (Exception ignored) {}
+                
                 records.add(new VillagerDeathRecord(
                     rs.getString("player_name"),
                     rs.getString("player_uuid"),
@@ -340,7 +390,9 @@ public class DatabaseStorage implements StorageProvider {
                     rs.getDouble("y"),
                     rs.getDouble("z"),
                     rs.getLong("timestamp"),
-                    enchantments
+                    enchantments,
+                    trades,
+                    villagerLevel
                 ));
             }
         } catch (SQLException e) {
@@ -407,13 +459,18 @@ public class DatabaseStorage implements StorageProvider {
     
     @Override
     public void cleanupExpiredRestrictions() {
+        long currentTime = System.currentTimeMillis();
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
                  "DELETE FROM npp_player_restrictions WHERE expire_time < ? AND is_permanent = 0")) {
-            stmt.setLong(1, System.currentTimeMillis());
-            stmt.executeUpdate();
+            stmt.setLong(1, currentTime);
+            int deleted = stmt.executeUpdate();
+            if (deleted > 0) {
+                plugin.getLogger().fine("Cleaned up " + deleted + " expired player restrictions");
+            }
         } catch (SQLException e) {
             plugin.getLogger().warning("Error cleaning up restrictions: " + e.getMessage());
+            plugin.getLogger().fine("Stack trace: " + java.util.Arrays.toString(e.getStackTrace()));
         }
     }
 }

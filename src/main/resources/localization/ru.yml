@@ -43,6 +43,7 @@ messages:
   restrictions-blocked-damage: "&cВы не можете наносить урон. Осталось: {time}"
   restrictions-blocked-item: "&cИспользование этого предмета ограничено. Осталось: {time}"
   restrictions-blocked-drop: "&cВы не можете выбрасывать этот предмет. Осталось: {time}"
+  restrictions-blocked-pickup: "&cВы не можете поднимать этот предмет. Осталось: {time}"
   restrictions-blocked-command: "&cЭта команда ограничена. Осталось: {time}"
   
   # Villager Tracker
@@ -61,7 +62,14 @@ messages:
   tracker-coords-hover: "Нажмите для телепортации ({world})"
   tracker-entry-date: "  &7Дата: &f{date}"
   tracker-entry-enchantments: "  &7Зачарования: &f{enchantments}"
+  tracker-entry-level: "  &7Уровень: &f{level}"
+  tracker-entry-trades-header: "  &7Торги:"
   tracker-shown-last: "&7Показаны последние {shown} записей из {total}"
+  tracker-summon-usage: "&cИспользование: /history summon <номер>"
+  tracker-summon-no-records: "&cНет записей для призыва. Сначала просмотрите историю."
+  tracker-summon-invalid-number: "&cНеверный номер записи! Доступны номера от 1 до {max}"
+  tracker-summon-success: "&aЖитель призван по записи #{number}!"
+  tracker-summon-error: "&cОшибка при призыве жителя!"
   tracker-notify: "&c[VillagerTracker] &fИгрок &e{player} &fубил жителя типа &b{type} &fв мире &a{world} &fпо координатам "
   tracker-coords-usage: "&cОшибка: Для поиска по координатам укажите X Y Z или используйте 'coords'"
   tracker-usage: "&7Использование: /history <игрок> или /history <x> <y> <z> или /history coords"

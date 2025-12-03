@@ -62,13 +62,13 @@ public class RestrictCommand implements CommandExecutor, TabCompleter {
             restrictionsManager.removePlayerRestriction(playerUUID, restrictionName);
             sender.sendMessage(messageManager.get("restrictions-removed", "player", targetPlayer.getName()));
             ActionBarUtil.sendActionBar(targetPlayer, 
-                messageManager.get("restrictions-notify-removed", "restriction", restrictionName));
+                messageManager.getComponent("restrictions-notify-removed", "restriction", restrictionName));
         } else {
             restrictionsManager.addPlayerRestriction(playerUUID, restrictionName, durationSeconds);
             String timeStr = TimeUtil.formatTimeLocalized(durationSeconds, messageManager);
             sender.sendMessage(messageManager.get("restrictions-applied", "time", timeStr));
             ActionBarUtil.sendActionBar(targetPlayer, 
-                messageManager.get("restrictions-notify-applied", "restriction", restrictionName, "time", timeStr));
+                messageManager.getComponent("restrictions-notify-applied", "restriction", restrictionName, "time", timeStr));
         }
         
         return true;

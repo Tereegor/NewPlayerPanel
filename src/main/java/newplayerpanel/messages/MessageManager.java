@@ -1,11 +1,9 @@
 package newplayerpanel.messages;
 
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.hover.content.Text;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import newplayerpanel.storage.StorageProvider;
-import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -19,86 +17,75 @@ import java.util.Map;
 public class MessageManager {
     
     private final JavaPlugin plugin;
-    private final StorageProvider storageProvider;
     private final Map<String, String> messages;
+    private final MiniMessage miniMessage;
     private String currentLanguage;
     
     public MessageManager(JavaPlugin plugin, StorageProvider storageProvider) {
         this.plugin = plugin;
-        this.storageProvider = storageProvider;
         this.messages = new HashMap<>();
+        this.miniMessage = MiniMessage.miniMessage();
         this.currentLanguage = plugin.getConfig().getString("language", "ru");
     }
     
     public void loadMessages() {
         messages.clear();
         
-        if (!storageProvider.messagesExist(currentLanguage)) {
-            loadMessagesFromFiles();
-        }
+        java.io.File localizationFolder = new java.io.File(plugin.getDataFolder(), "localization");
+        java.io.File languageFile = new java.io.File(localizationFolder, currentLanguage + ".yml");
         
-        messages.putAll(storageProvider.loadMessages(currentLanguage));
+        FileConfiguration langConfig = null;
         
-        if (messages.isEmpty()) {
-            loadMessagesFromFilesDirectly();
-        }
-        
-        plugin.getLogger().info("Loaded " + messages.size() + " messages for language: " + currentLanguage);
-    }
-    
-    private void loadMessagesFromFiles() {
-        String[] languages = {"ru", "en"};
-        
-        for (String lang : languages) {
-            String fileName = "messages_" + lang + ".yml";
+        if (languageFile.exists()) {
+            langConfig = YamlConfiguration.loadConfiguration(languageFile);
+            plugin.getLogger().info("Loading localization from file: " + languageFile.getAbsolutePath());
+        } else {
+            String fileName = "localization/" + currentLanguage + ".yml";
             InputStream stream = plugin.getResource(fileName);
             
             if (stream == null) {
-                plugin.getLogger().warning("Could not find " + fileName);
-                continue;
+                plugin.getLogger().warning("Could not find localization file: " + fileName + ", falling back to ru.yml");
+                stream = plugin.getResource("localization/ru.yml");
             }
             
-            FileConfiguration langConfig = YamlConfiguration.loadConfiguration(
-                new InputStreamReader(stream, StandardCharsets.UTF_8));
-            
-            if (langConfig.isConfigurationSection("messages")) {
-                for (String key : langConfig.getConfigurationSection("messages").getKeys(false)) {
-                    String value = langConfig.getString("messages." + key, "");
-                    storageProvider.saveMessage(lang, key, value);
+            if (stream != null) {
+                if (!localizationFolder.exists()) {
+                    localizationFolder.mkdirs();
+                }
+                
+                try {
+                    java.nio.file.Files.copy(stream, languageFile.toPath(), 
+                        java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                    plugin.getLogger().info("Copied default localization to: " + languageFile.getAbsolutePath());
+                    
+                    langConfig = YamlConfiguration.loadConfiguration(languageFile);
+                } catch (Exception e) {
+                    plugin.getLogger().warning("Failed to copy localization file: " + e.getMessage());
+                    langConfig = YamlConfiguration.loadConfiguration(
+                        new InputStreamReader(stream, StandardCharsets.UTF_8));
                 }
             }
         }
-    }
-    
-    private void loadMessagesFromFilesDirectly() {
-        String fileName = "messages_" + currentLanguage + ".yml";
-        InputStream stream = plugin.getResource(fileName);
         
-        if (stream == null) {
-            stream = plugin.getResource("messages_ru.yml");
-        }
-        
-        if (stream != null) {
-            FileConfiguration langConfig = YamlConfiguration.loadConfiguration(
-                new InputStreamReader(stream, StandardCharsets.UTF_8));
-            
-            if (langConfig.isConfigurationSection("messages")) {
-                for (String key : langConfig.getConfigurationSection("messages").getKeys(false)) {
-                    messages.put(key, langConfig.getString("messages." + key, ""));
-                }
+        if (langConfig != null && langConfig.isConfigurationSection("messages")) {
+            for (String key : langConfig.getConfigurationSection("messages").getKeys(false)) {
+                messages.put(key, langConfig.getString("messages." + key, ""));
             }
         }
+        
+        plugin.getLogger().info("Loaded " + messages.size() + " messages for language: " + currentLanguage);
     }
     
     public String getRaw(String key) {
         return messages.getOrDefault(key, key);
     }
     
-    public String get(String key) {
-        return ChatColor.translateAlternateColorCodes('&', messages.getOrDefault(key, key));
+    public Component getComponent(String key) {
+        String message = messages.getOrDefault(key, key);
+        return miniMessage.deserialize(convertLegacyColors(message));
     }
     
-    public String get(String key, Object... replacements) {
+    public Component getComponent(String key, Object... replacements) {
         String message = messages.getOrDefault(key, key);
         
         for (int i = 0; i < replacements.length; i += 2) {
@@ -109,20 +96,82 @@ public class MessageManager {
             }
         }
         
-        return ChatColor.translateAlternateColorCodes('&', message);
+        return miniMessage.deserialize(convertLegacyColors(message));
     }
     
-    public TextComponent createClickableCoords(String world, double x, double y, double z) {
+    public String get(String key) {
+        Component component = getComponent(key);
+        String result = LegacyComponentSerializer.legacySection().serialize(component);
+        return result.replace("\n", " ").replace("\r", "");
+    }
+    
+    public String get(String key, Object... replacements) {
+        Component component = getComponent(key, replacements);
+        String result = LegacyComponentSerializer.legacySection().serialize(component);
+        return result.replace("\n", " ").replace("\r", "");
+    }
+    
+    private String convertLegacyColors(String message) {
+        return message.replace("&0", "<black>")
+                .replace("&1", "<dark_blue>")
+                .replace("&2", "<dark_green>")
+                .replace("&3", "<dark_aqua>")
+                .replace("&4", "<dark_red>")
+                .replace("&5", "<dark_purple>")
+                .replace("&6", "<gold>")
+                .replace("&7", "<gray>")
+                .replace("&8", "<dark_gray>")
+                .replace("&9", "<blue>")
+                .replace("&a", "<green>")
+                .replace("&b", "<aqua>")
+                .replace("&c", "<red>")
+                .replace("&d", "<light_purple>")
+                .replace("&e", "<yellow>")
+                .replace("&f", "<white>")
+                .replace("&l", "<bold>")
+                .replace("&m", "<strikethrough>")
+                .replace("&n", "<underline>")
+                .replace("&o", "<italic>")
+                .replace("&k", "<obfuscated>")
+                .replace("&r", "<reset>");
+    }
+    
+    public Component createClickableCoordsComponent(String world, double x, double y, double z) {
+        String coords = String.format("%.0f, %.0f, %.0f", x, y, z);
+        String command = String.format("/tp %.0f %.0f %.0f", x, y, z);
+        
+        String rawText = getRaw("tracker-entry-coords-click");
+        rawText = rawText.replace("{coords}", coords);
+        rawText = convertLegacyColors(rawText);
+        
+        Component component = miniMessage.deserialize(rawText);
+        component = component.clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand(command));
+        
+        String hoverText = getRaw("tracker-coords-hover");
+        hoverText = hoverText.replace("{world}", world);
+        hoverText = convertLegacyColors(hoverText);
+        Component hoverComponent = miniMessage.deserialize(hoverText);
+        component = component.hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(hoverComponent));
+        
+        return component;
+    }
+    
+    @Deprecated
+    public net.md_5.bungee.api.chat.TextComponent createClickableCoords(String world, double x, double y, double z) {
         String coords = String.format("%.0f, %.0f, %.0f", x, y, z);
         String command = String.format("/tp %.0f %.0f %.0f", x, y, z);
         
         String rawText = get("tracker-entry-coords-click", "coords", coords);
-        TextComponent component = new TextComponent(TextComponent.fromLegacyText(rawText));
+        net.md_5.bungee.api.chat.TextComponent component = new net.md_5.bungee.api.chat.TextComponent(
+            net.md_5.bungee.api.chat.TextComponent.fromLegacyText(rawText));
         
         String hoverText = get("tracker-coords-hover", "world", world);
         
-        component.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command));
-        component.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(hoverText)));
+        component.setClickEvent(new net.md_5.bungee.api.chat.ClickEvent(
+            net.md_5.bungee.api.chat.ClickEvent.Action.RUN_COMMAND, command));
+        component.setHoverEvent(new net.md_5.bungee.api.chat.HoverEvent(
+            net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT, 
+            new net.md_5.bungee.api.chat.hover.content.Text(hoverText)));
         
         return component;
     }

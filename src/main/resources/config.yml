@@ -32,3 +32,5 @@ villager-tracker:
   only-traded: true
   # Notify players with permission
   notify-enabled: true
+  # Save debug JSON files for each villager death (for debugging only)
+  save-debug-files: false
