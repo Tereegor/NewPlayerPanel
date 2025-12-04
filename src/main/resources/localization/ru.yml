@@ -1,5 +1,4 @@
 # Russian translations / Русские переводы
-# Эти сообщения будут загружены в базу данных при первом запуске
 
 messages:
   # General
@@ -60,6 +59,8 @@ messages:
   tracker-entry-coords: "  &7Координаты: "
   tracker-entry-coords-click: "&f{coords} &7[&aТП&7]"
   tracker-coords-hover: "Нажмите для телепортации ({world})"
+  tracker-villager-tp-click: "&f{coords} &7[&aТП к жителю&7]"
+  tracker-villager-tp-hover: "Нажмите для телепортации к жителю ({world})"
   tracker-entry-date: "  &7Дата: &f{date}"
   tracker-entry-enchantments: "  &7Зачарования: &f{enchantments}"
   tracker-entry-level: "  &7Уровень: &f{level}"
@@ -86,6 +87,10 @@ messages:
   tracker-purge-success: "&aУдалено {count} записей старше {time}."
   tracker-purge-usage: "&cИспользование: /history purge <время> (например: 7d, 30d, 1h)"
   tracker-purge-invalid-time: "&cНеверный формат времени! Примеры: 7d, 30d, 1h, 2w"
+  tracker-tp-success: "&aТелепортирован к координатам {coords} в мире {world}"
+  tracker-tp-world-not-found: "&cМир '{world}' не найден!"
+  tracker-tp-invalid-coords: "&cНеверные координаты!"
+  tracker-tp-error: "&cОшибка при телепортации!"
   
   # Database
   database-error: "&cОшибка базы данных!"

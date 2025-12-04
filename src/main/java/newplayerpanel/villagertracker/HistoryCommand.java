@@ -205,13 +205,32 @@ public class HistoryCommand implements CommandExecutor, TabCompleter {
             
             if (sender instanceof Player) {
                 Player player = (Player) sender;
-                net.kyori.adventure.text.Component coordsComponent = messageManager.createClickableCoordsComponent(
-                    record.getWorld(), record.getX(), record.getY(), record.getZ());
-                net.kyori.adventure.text.Component labelComponent = messageManager.getComponent("tracker-entry-coords");
-                net.kyori.adventure.text.Component fullComponent = labelComponent.append(coordsComponent);
-                
-                String legacyMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(fullComponent);
-                ActionBarUtil.sendMessage(player, legacyMessage);
+                try {
+                    net.kyori.adventure.text.Component labelComponent = messageManager.getComponent("tracker-entry-coords");
+                    net.kyori.adventure.text.Component villagerTpComponent = messageManager.createClickableVillagerTpComponent(
+                        record.getWorld(), record.getX(), record.getY(), record.getZ());
+                    net.kyori.adventure.text.Component fullComponent = labelComponent.append(villagerTpComponent);
+                    
+                    java.lang.reflect.Method sendMethod = Player.class.getMethod("sendMessage", net.kyori.adventure.text.Component.class);
+                    sendMethod.invoke(player, fullComponent);
+                } catch (NoSuchMethodException | java.lang.reflect.InvocationTargetException | IllegalAccessException e) {
+                    try {
+                        net.md_5.bungee.api.chat.TextComponent labelComponent = new net.md_5.bungee.api.chat.TextComponent(
+                            net.md_5.bungee.api.chat.TextComponent.fromLegacyText(coordsLabel));
+                        net.md_5.bungee.api.chat.TextComponent villagerTpComponent = messageManager.createClickableVillagerTpComponentSpigot(
+                            record.getWorld(), record.getX(), record.getY(), record.getZ());
+                        
+                        net.md_5.bungee.api.chat.BaseComponent[] fullMessage = new net.md_5.bungee.api.chat.BaseComponent[]{
+                            labelComponent,
+                            villagerTpComponent
+                        };
+                        
+                        player.spigot().sendMessage(fullMessage);
+                    } catch (Exception ex) {
+                        sender.sendMessage(coordsLabel + String.format("%.0f, %.0f, %.0f", 
+                            record.getX(), record.getY(), record.getZ()));
+                    }
+                }
             } else {
                 sender.sendMessage(coordsLabel + String.format("%.0f, %.0f, %.0f", 
                     record.getX(), record.getY(), record.getZ()));

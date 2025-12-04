@@ -1,5 +1,4 @@
 # English translations
-# These messages will be loaded into the database on first run
 
 messages:
   # General
@@ -60,6 +59,8 @@ messages:
   tracker-entry-coords: "  &7Coordinates: "
   tracker-entry-coords-click: "&f{coords} &7[&aTP&7]"
   tracker-coords-hover: "Click to teleport ({world})"
+  tracker-villager-tp-click: "&f{coords} &7[&aTP to Villager&7]"
+  tracker-villager-tp-hover: "Click to teleport to villager ({world})"
   tracker-entry-date: "  &7Date: &f{date}"
   tracker-entry-enchantments: "  &7Enchantments: &f{enchantments}"
   tracker-entry-level: "  &7Level: &f{level}"
@@ -86,6 +87,10 @@ messages:
   tracker-purge-success: "&aDeleted {count} records older than {time}."
   tracker-purge-usage: "&cUsage: /history purge <time> (e.g.: 7d, 30d, 1h)"
   tracker-purge-invalid-time: "&cInvalid time format! Examples: 7d, 30d, 1h, 2w"
+  tracker-tp-success: "&aTeleported to coordinates {coords} in world {world}"
+  tracker-tp-world-not-found: "&cWorld '{world}' not found!"
+  tracker-tp-invalid-coords: "&cInvalid coordinates!"
+  tracker-tp-error: "&cError teleporting!"
   
   # Database
   database-error: "&cDatabase error!"

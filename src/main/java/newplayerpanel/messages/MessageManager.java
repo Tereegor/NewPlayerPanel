@@ -4,6 +4,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import newplayerpanel.storage.StorageProvider;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -138,20 +140,93 @@ public class MessageManager {
     
     public Component createClickableCoordsComponent(String world, double x, double y, double z) {
         String coords = String.format("%.0f, %.0f, %.0f", x, y, z);
-        String command = String.format("/tp @s %.0f %.0f %.0f", x, y, z);
+        String dimension = getDimensionFromWorld(world);
+        String command = String.format("/execute in %s run tp @s %.0f %.0f %.0f", dimension, x, y, z);
+        String hoverText = getRaw("tracker-coords-hover").replace("{world}", world);
+        String text = getRaw("tracker-entry-coords-click").replace("{coords}", coords);
         
-        String rawText = getRaw("tracker-entry-coords-click");
-        rawText = rawText.replace("{coords}", coords);
-        rawText = convertLegacyColors(rawText);
+        Component textComponent = miniMessage.deserialize(convertLegacyColors(text));
+        Component clickableComponent = textComponent.clickEvent(
+            net.kyori.adventure.text.event.ClickEvent.runCommand(command));
+        Component hoverComponent = miniMessage.deserialize(convertLegacyColors(hoverText));
+        clickableComponent = clickableComponent.hoverEvent(
+            net.kyori.adventure.text.event.HoverEvent.showText(hoverComponent));
         
-        Component component = miniMessage.deserialize(rawText);
-        component = component.clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand(command));
+        return clickableComponent;
+    }
+    
+    private String getDimensionFromWorld(String worldName) {
+        World world = Bukkit.getWorld(worldName);
+        if (world != null) {
+            switch (world.getEnvironment()) {
+                case NORMAL:
+                    return "minecraft:overworld";
+                case NETHER:
+                    return "minecraft:the_nether";
+                case THE_END:
+                    return "minecraft:the_end";
+                default:
+                    return "minecraft:overworld";
+            }
+        }
+        return "minecraft:overworld";
+    }
+    
+    public Component createClickableVillagerTpComponent(String world, double x, double y, double z) {
+        String coords = String.format("%.0f, %.0f, %.0f", x, y, z);
+        String dimension = getDimensionFromWorld(world);
+        String command = String.format("/execute in %s run tp @s %.0f %.0f %.0f", dimension, x, y, z);
         
-        String hoverText = getRaw("tracker-coords-hover");
-        hoverText = hoverText.replace("{world}", world);
-        hoverText = convertLegacyColors(hoverText);
-        Component hoverComponent = miniMessage.deserialize(hoverText);
-        component = component.hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(hoverComponent));
+        String hoverTextRaw;
+        if (!messages.containsKey("tracker-villager-tp-hover")) {
+            hoverTextRaw = getRaw("tracker-coords-hover");
+        } else {
+            hoverTextRaw = getRaw("tracker-villager-tp-hover");
+        }
+        String hoverText = hoverTextRaw.replace("{world}", world);
+        
+        String textRaw;
+        if (!messages.containsKey("tracker-villager-tp-click")) {
+            textRaw = getRaw("tracker-entry-coords-click");
+        } else {
+            textRaw = getRaw("tracker-villager-tp-click");
+        }
+        String text = textRaw.replace("{coords}", coords);
+        
+        String miniMessageText = String.format("<click:run_command:'%s'><hover:show_text:'%s'>%s</hover></click>", 
+            command, hoverText.replace("'", "''"), convertLegacyColors(text));
+        return miniMessage.deserialize(miniMessageText);
+    }
+    
+    public net.md_5.bungee.api.chat.TextComponent createClickableVillagerTpComponentSpigot(String world, double x, double y, double z) {
+        String coords = String.format("%.0f, %.0f, %.0f", x, y, z);
+        String dimension = getDimensionFromWorld(world);
+        String command = String.format("/execute in %s run tp @s %.0f %.0f %.0f", dimension, x, y, z);
+        
+        String hoverTextRaw;
+        if (!messages.containsKey("tracker-villager-tp-hover")) {
+            hoverTextRaw = getRaw("tracker-coords-hover");
+        } else {
+            hoverTextRaw = getRaw("tracker-villager-tp-hover");
+        }
+        String hoverText = hoverTextRaw.replace("{world}", world);
+        
+        String textRaw;
+        if (!messages.containsKey("tracker-villager-tp-click")) {
+            textRaw = getRaw("tracker-entry-coords-click");
+        } else {
+            textRaw = getRaw("tracker-villager-tp-click");
+        }
+        String text = org.bukkit.ChatColor.translateAlternateColorCodes('&', textRaw.replace("{coords}", coords));
+        
+        net.md_5.bungee.api.chat.TextComponent component = new net.md_5.bungee.api.chat.TextComponent(
+            net.md_5.bungee.api.chat.TextComponent.fromLegacyText(text));
+        component.setClickEvent(new net.md_5.bungee.api.chat.ClickEvent(
+            net.md_5.bungee.api.chat.ClickEvent.Action.RUN_COMMAND, command));
+        component.setHoverEvent(new net.md_5.bungee.api.chat.HoverEvent(
+            net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT, 
+            new net.md_5.bungee.api.chat.hover.content.Text(
+                org.bukkit.ChatColor.translateAlternateColorCodes('&', hoverText))));
         
         return component;
     }
