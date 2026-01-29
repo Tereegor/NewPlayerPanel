@@ -34,3 +34,8 @@ villager-tracker:
   notify-enabled: true
   # Save debug JSON files for each villager death (for debugging only)
   save-debug-files: false
+
+# Spawn Protection settings
+# Detailed configuration in spawnprotect.yml
+spawn-protect:
+  enabled: true

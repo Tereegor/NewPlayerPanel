@@ -1,6 +1,6 @@
 api-version: '1.20'
 name: NewPlayerPanel
-version: 3.0.2
+version: 3.0.3
 main: newplayerpanel.NewPlayerPanel
 author: Math_Tereegor
 description: Admin panel plugin for player management
@@ -68,4 +68,7 @@ permissions:
     default: true
   newplayerpanel.restrictions.view.others:
     description: View other players' restrictions
+    default: op
+  newplayerpanel.spawnprotect.bypass:
+    description: Bypass spawn protection restrictions
     default: op

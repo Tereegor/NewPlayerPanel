@@ -96,3 +96,10 @@ messages:
   database-error: "&cОшибка базы данных!"
   database-connected: "&aПодключение к базе данных установлено."
   database-disconnected: "&eОтключение от базы данных."
+  
+  # Spawn Protection
+  spawnprotect-block-break: "&cВы не можете ломать этот блок в защищённой зоне!"
+  spawnprotect-block-place: "&cВы не можете ставить этот блок в защищённой зоне!"
+  spawnprotect-interact: "&cВы не можете использовать это в защищённой зоне!"
+  spawnprotect-entity-interact: "&cВы не можете взаимодействовать с этим в защищённой зоне!"
+  spawnprotect-pvp: "&cPvP запрещено в защищённой зоне!"

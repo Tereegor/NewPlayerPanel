@@ -6,7 +6,7 @@
 
     <groupId>com.example</groupId>
     <artifactId>newplayerpanel</artifactId>
-    <version>3.0.2</version>
+    <version>3.0.3</version>
     <packaging>jar</packaging>
 
     <name>NewPlayerPanel</name>

@@ -1,0 +1,56 @@
+# BLACKLIST = can do all except listed, WHITELIST = can only do listed
+
+# Time-based bypass: players get full access after playing for specified time
+# Set to 0 to disable (use only permission-based bypass)
+# Format: time in seconds (3600 = 1 hour, 86400 = 1 day)
+bypass-after-playtime: 0
+
+zones:
+  spawn:
+    world: world
+    center:
+      x: 0
+      z: 0
+    radius: 100
+    
+    block-break:
+      enabled: true
+      mode: WHITELIST
+      list: []
+    
+    block-place:
+      enabled: true
+      mode: WHITELIST
+      list: []
+    
+    interact:
+      enabled: true
+      mode: WHITELIST
+      list:
+        - ENDER_CHEST
+        - CRAFTING_TABLE
+        - ENCHANTING_TABLE
+        - ANVIL
+        - CHIPPED_ANVIL
+        - DAMAGED_ANVIL
+        - SMITHING_TABLE
+        - GRINDSTONE
+        - STONECUTTER
+        - CARTOGRAPHY_TABLE
+        - LOOM
+    
+    entity-interact:
+      enabled: false
+      mode: WHITELIST
+      list:
+        - VILLAGER
+        - WANDERING_TRADER
+    
+    pvp:
+      enabled: true
+    
+    explosions:
+      enabled: true
+    
+    fire-spread:
+      enabled: true

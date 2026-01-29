@@ -96,3 +96,10 @@ messages:
   database-error: "&cDatabase error!"
   database-connected: "&aDatabase connection established."
   database-disconnected: "&eDatabase disconnected."
+  
+  # Spawn Protection
+  spawnprotect-block-break: "&cYou cannot break this block in the protected zone!"
+  spawnprotect-block-place: "&cYou cannot place this block in the protected zone!"
+  spawnprotect-interact: "&cYou cannot use this in the protected zone!"
+  spawnprotect-entity-interact: "&cYou cannot interact with this in the protected zone!"
+  spawnprotect-pvp: "&cPvP is disabled in the protected zone!"

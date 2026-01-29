@@ -3,6 +3,7 @@ package newplayerpanel;
 import newplayerpanel.commands.NPPCommand;
 import newplayerpanel.messages.MessageManager;
 import newplayerpanel.restrictions.RestrictionsModule;
+import newplayerpanel.spawnprotect.SpawnProtectModule;
 import newplayerpanel.storage.DatabaseStorage;
 import newplayerpanel.storage.JsonStorage;
 import newplayerpanel.storage.StorageProvider;
@@ -15,6 +16,7 @@ public class NewPlayerPanel extends JavaPlugin {
     private MessageManager messageManager;
     private VillagerTrackerModule villagerTrackerModule;
     private RestrictionsModule restrictionsModule;
+    private SpawnProtectModule spawnProtectModule;
     
     @Override
     public void onEnable() {
@@ -30,6 +32,7 @@ public class NewPlayerPanel extends JavaPlugin {
         
         this.villagerTrackerModule = new VillagerTrackerModule(this, storageProvider, messageManager);
         this.restrictionsModule = new RestrictionsModule(this, storageProvider, messageManager);
+        this.spawnProtectModule = new SpawnProtectModule(this, messageManager);
         
         registerCommands();
         
@@ -83,6 +86,10 @@ public class NewPlayerPanel extends JavaPlugin {
     
     @Override
     public void onDisable() {
+        if (spawnProtectModule != null) {
+            spawnProtectModule.onDisable();
+            spawnProtectModule = null;
+        }
         if (restrictionsModule != null) {
             restrictionsModule.onDisable();
             restrictionsModule = null;
@@ -115,6 +122,10 @@ public class NewPlayerPanel extends JavaPlugin {
             villagerTrackerModule.reload();
         }
         
+        if (spawnProtectModule != null) {
+            spawnProtectModule.reload();
+        }
+        
         getLogger().info("NewPlayerPanel configuration reloaded!");
     }
     
@@ -132,5 +143,9 @@ public class NewPlayerPanel extends JavaPlugin {
     
     public RestrictionsModule getRestrictionsModule() {
         return restrictionsModule;
+    }
+    
+    public SpawnProtectModule getSpawnProtectModule() {
+        return spawnProtectModule;
     }
 }
