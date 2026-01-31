@@ -2,7 +2,6 @@ package newplayerpanel.spawnprotect;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.entity.EntityType;
 
 import java.util.HashSet;
@@ -95,8 +94,16 @@ public class SpawnZone {
         this.blockBreakWhitelist = whitelist;
     }
     
+    public boolean isBlockBreakWhitelist() {
+        return blockBreakWhitelist;
+    }
+    
     public void setBlockBreakList(Set<Material> list) {
         this.blockBreakList = list != null ? list : new HashSet<>();
+    }
+    
+    public Set<Material> getBlockBreakList() {
+        return blockBreakList;
     }
     
     public boolean canBreakBlock(Material material) {
@@ -120,8 +127,16 @@ public class SpawnZone {
         this.blockPlaceWhitelist = whitelist;
     }
     
+    public boolean isBlockPlaceWhitelist() {
+        return blockPlaceWhitelist;
+    }
+    
     public void setBlockPlaceList(Set<Material> list) {
         this.blockPlaceList = list != null ? list : new HashSet<>();
+    }
+    
+    public Set<Material> getBlockPlaceList() {
+        return blockPlaceList;
     }
     
     public boolean canPlaceBlock(Material material) {
@@ -145,8 +160,16 @@ public class SpawnZone {
         this.interactWhitelist = whitelist;
     }
     
+    public boolean isInteractWhitelist() {
+        return interactWhitelist;
+    }
+    
     public void setInteractList(Set<Material> list) {
         this.interactList = list != null ? list : new HashSet<>();
+    }
+    
+    public Set<Material> getInteractList() {
+        return interactList;
     }
     
     public boolean canInteract(Material material) {
@@ -170,8 +193,16 @@ public class SpawnZone {
         this.entityInteractWhitelist = whitelist;
     }
     
+    public boolean isEntityInteractWhitelist() {
+        return entityInteractWhitelist;
+    }
+    
     public void setEntityInteractList(Set<EntityType> list) {
         this.entityInteractList = list != null ? list : new HashSet<>();
+    }
+    
+    public Set<EntityType> getEntityInteractList() {
+        return entityInteractList;
     }
     
     public boolean canInteractEntity(EntityType type) {

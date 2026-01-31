@@ -3,6 +3,7 @@ package newplayerpanel;
 import newplayerpanel.commands.NPPCommand;
 import newplayerpanel.messages.MessageManager;
 import newplayerpanel.restrictions.RestrictionsModule;
+import newplayerpanel.spawnprotect.SpawnProtectCommand;
 import newplayerpanel.spawnprotect.SpawnProtectModule;
 import newplayerpanel.storage.DatabaseStorage;
 import newplayerpanel.storage.JsonStorage;
@@ -81,6 +82,12 @@ public class NewPlayerPanel extends JavaPlugin {
             NPPCommand nppCommand = new NPPCommand(this, messageManager);
             getCommand("npp").setExecutor(nppCommand);
             getCommand("npp").setTabCompleter(nppCommand);
+        }
+        if (getCommand("spawnprotect") != null && spawnProtectModule != null) {
+            SpawnProtectCommand spawnProtectCommand = new SpawnProtectCommand(
+                    spawnProtectModule.getManager(), messageManager);
+            getCommand("spawnprotect").setExecutor(spawnProtectCommand);
+            getCommand("spawnprotect").setTabCompleter(spawnProtectCommand);
         }
     }
     

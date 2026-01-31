@@ -1,6 +1,6 @@
 api-version: '1.20'
 name: NewPlayerPanel
-version: 3.0.3
+version: 3.0.4
 main: newplayerpanel.NewPlayerPanel
 author: Math_Tereegor
 description: Admin panel plugin for player management
@@ -40,6 +40,12 @@ commands:
     usage: /restrictions [player]
     permission: newplayerpanel.restrictions.view
     permission-message: You don't have permission to use this command!
+  spawnprotect:
+    description: Spawn protection info, playtime; admins: list, add, remove, reload
+    usage: |
+      /spawnprotect info - module info
+      /spawnprotect playtime [player] - your playtime (admins: any player)
+      /spawnprotect list | add | remove | reload - admin only
 
 permissions:
   newplayerpanel.admin:
@@ -68,6 +74,9 @@ permissions:
     default: true
   newplayerpanel.restrictions.view.others:
     description: View other players' restrictions
+    default: op
+  newplayerpanel.spawnprotect.admin:
+    description: Manage spawn protection zones (add, remove, list)
     default: op
   newplayerpanel.spawnprotect.bypass:
     description: Bypass spawn protection restrictions

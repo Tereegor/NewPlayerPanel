@@ -11,7 +11,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SpawnProtectManager {
     
@@ -221,5 +223,93 @@ public class SpawnProtectManager {
         }
         long playTimeSeconds = getPlayerPlaytimeSeconds(player);
         return Math.max(0, bypassAfterPlaytime - playTimeSeconds);
+    }
+    
+    public SpawnZone createDefaultZone(String name, String worldName, double centerX, double centerZ, double radius) {
+        SpawnZone zone = new SpawnZone(name, worldName, centerX, centerZ, radius);
+        zone.setBlockBreakEnabled(true);
+        zone.setBlockBreakWhitelist(true);
+        zone.setBlockBreakList(Collections.emptySet());
+        zone.setBlockPlaceEnabled(true);
+        zone.setBlockPlaceWhitelist(true);
+        zone.setBlockPlaceList(Collections.emptySet());
+        zone.setInteractEnabled(true);
+        zone.setInteractWhitelist(true);
+        zone.setInteractList(parseMaterials(Arrays.asList("ENDER_CHEST", "CRAFTING_TABLE", "ENCHANTING_TABLE", "ANVIL",
+                "CHIPPED_ANVIL", "DAMAGED_ANVIL", "SMITHING_TABLE", "GRINDSTONE", "STONECUTTER", "CARTOGRAPHY_TABLE", "LOOM")));
+        zone.setEntityInteractEnabled(false);
+        zone.setEntityInteractWhitelist(true);
+        zone.setEntityInteractList(parseEntityTypes(Arrays.asList("VILLAGER", "WANDERING_TRADER")));
+        zone.setPvpEnabled(true);
+        zone.setExplosionsEnabled(true);
+        zone.setFireSpreadEnabled(true);
+        return zone;
+    }
+    
+    public boolean addZone(SpawnZone zone) {
+        String key = zone.getName().toLowerCase();
+        if (zones.containsKey(key)) {
+            return false;
+        }
+        zones.put(key, zone);
+        return saveZones();
+    }
+    
+    public boolean removeZone(String name) {
+        if (zones.remove(name.toLowerCase()) == null) {
+            return false;
+        }
+        return saveZones();
+    }
+    
+    public boolean saveZones() {
+        if (config == null || configFile == null) {
+            return false;
+        }
+        config.set("bypass-after-playtime", bypassAfterPlaytime);
+        ConfigurationSection zonesSection = config.getConfigurationSection("zones");
+        if (zonesSection != null) {
+            for (String key : new ArrayList<>(zonesSection.getKeys(false))) {
+                config.set("zones." + key, null);
+            }
+        }
+        for (SpawnZone zone : zones.values()) {
+            String path = "zones." + zone.getName();
+            config.set(path + ".world", zone.getWorldName());
+            config.set(path + ".center.x", zone.getCenterX());
+            config.set(path + ".center.z", zone.getCenterZ());
+            config.set(path + ".radius", zone.getRadius());
+            
+            config.set(path + ".block-break.enabled", zone.isBlockBreakEnabled());
+            config.set(path + ".block-break.mode", zone.isBlockBreakWhitelist() ? "WHITELIST" : "BLACKLIST");
+            config.set(path + ".block-break.list", zone.getBlockBreakList().stream()
+                    .map(Enum::name).collect(Collectors.toList()));
+            
+            config.set(path + ".block-place.enabled", zone.isBlockPlaceEnabled());
+            config.set(path + ".block-place.mode", zone.isBlockPlaceWhitelist() ? "WHITELIST" : "BLACKLIST");
+            config.set(path + ".block-place.list", zone.getBlockPlaceList().stream()
+                    .map(Enum::name).collect(Collectors.toList()));
+            
+            config.set(path + ".interact.enabled", zone.isInteractEnabled());
+            config.set(path + ".interact.mode", zone.isInteractWhitelist() ? "WHITELIST" : "BLACKLIST");
+            config.set(path + ".interact.list", zone.getInteractList().stream()
+                    .map(Enum::name).collect(Collectors.toList()));
+            
+            config.set(path + ".entity-interact.enabled", zone.isEntityInteractEnabled());
+            config.set(path + ".entity-interact.mode", zone.isEntityInteractWhitelist() ? "WHITELIST" : "BLACKLIST");
+            config.set(path + ".entity-interact.list", zone.getEntityInteractList().stream()
+                    .map(Enum::name).collect(Collectors.toList()));
+            
+            config.set(path + ".pvp.enabled", zone.isPvpEnabled());
+            config.set(path + ".explosions.enabled", zone.isExplosionsEnabled());
+            config.set(path + ".fire-spread.enabled", zone.isFireSpreadEnabled());
+        }
+        try {
+            config.save(configFile);
+            return true;
+        } catch (IOException e) {
+            plugin.getLogger().severe("Spawn Protect: Failed to save config: " + e.getMessage());
+            return false;
+        }
     }
 }
