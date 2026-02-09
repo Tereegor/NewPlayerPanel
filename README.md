@@ -1,4 +1,4 @@
-# NewPlayerPanel v3.0.4
+# NewPlayerPanel v3.0.5
 
 ## Возможности
 
@@ -37,7 +37,11 @@
 Гибкая система защиты зон спавна с детальной настройкой:
 
 - **Множественные зоны**: Создание неограниченного количества защищённых зон
-- **Круглые зоны**: Определение зон по центру и радиусу
+- **Три типа геометрии зон**:
+  - **CIRCLE** — круглая зона (центр + радиус, по умолчанию)
+  - **RECT** — прямоугольная зона (два угла, задаются через `pos1`/`pos2`)
+  - **POLY** — полигональная зона (произвольное количество вершин, минимум 3)
+- **Редактирование зон**: Изменение радиуса, центра, мира, PvP/взрывов/огня, удаление вершин полигона — всё в игре
 - **Команды управления**: Список зон, добавление и удаление зон (с подтверждением), перезагрузка конфига
 - **Info и playtime**: Любой игрок может узнать состояние модуля и своё время в игре; админы — время любого игрока
 - **Защита блоков**: Контроль ломания и установки блоков (**BLACKLIST**/*WHITELIST* режимы)
@@ -132,10 +136,33 @@
 | Команда | Описание | Пример |
 | ------- | -------- | ------ |
 | `/spawnprotect playtime [игрок]` | Время в игре любого игрока | `/spawnprotect playtime Steve` |
-| `/spawnprotect list` | Список зон защиты спавна | `/spawnprotect list` |
-| `/spawnprotect add <имя> [радиус]` | Добавить зону в текущей позиции (затем подтвердить: `... add <имя> confirm`) | `/spawnprotect add spawn 100` |
+| `/spawnprotect list` | Список зон с типом и размерами | `/spawnprotect list` |
+| `/spawnprotect add <имя> [радиус]` | Добавить круглую зону (подтверждение: `... add <имя> confirm`) | `/spawnprotect add spawn 100` |
+| `/spawnprotect add <имя> rect` | Добавить прямоугольную зону по `pos1`/`pos2` (подтверждение: `... add <имя> rect confirm`) | `/spawnprotect add market rect` |
 | `/spawnprotect remove <имя>` | Удалить зону (подтверждение: `... remove <имя> confirm`) | `/spawnprotect remove spawn` |
+| `/spawnprotect pos1` | Запомнить 1-й угол прямоугольника (текущая позиция) | `/spawnprotect pos1` |
+| `/spawnprotect pos2` | Запомнить 2-й угол прямоугольника (текущая позиция) | `/spawnprotect pos2` |
+| `/spawnprotect addpoint <имя>` | Добавить вершину полигональной зоны (создаёт зону при первой точке, далее добавляет) | `/spawnprotect addpoint arena` |
+| `/spawnprotect edit <зона> <параметр> <значение>` | Редактировать параметр зоны | `/spawnprotect edit spawn radius 150` |
 | `/spawnprotect reload` | Перезагрузить конфигурацию защиты спавна | `/spawnprotect reload` |
+
+**Создание зон:**
+
+- **Круглая (CIRCLE):** `/spawnprotect add <имя> [радиус]` → `... add <имя> confirm`
+- **Прямоугольная (RECT):** встать в 1-й угол → `/spawnprotect pos1` → встать во 2-й угол → `/spawnprotect pos2` → `/spawnprotect add <имя> rect` → `... add <имя> rect confirm`
+- **Полигональная (POLY):** обойти вершины и на каждой вызвать `/spawnprotect addpoint <имя>` (минимум 3 точки)
+
+**Редактирование зон (`edit`):**
+
+| Параметр | Описание | Пример |
+| -------- | -------- | ------ |
+| `radius` | Радиус зоны (CIRCLE) | `/spawnprotect edit spawn radius 200` |
+| `center` | Центр зоны = текущая позиция (CIRCLE) | `/spawnprotect edit spawn center` |
+| `world` | Мир зоны = текущий мир | `/spawnprotect edit spawn world` |
+| `pvp` | Защита от PvP | `/spawnprotect edit spawn pvp true` |
+| `explosions` | Защита от взрывов | `/spawnprotect edit spawn explosions false` |
+| `fire-spread` | Защита от огня | `/spawnprotect edit spawn fire-spread true` |
+| `removepoint` | Удалить вершину полигона по индексу (POLY) | `/spawnprotect edit arena removepoint 2` |
 
 **Подтверждение:** Добавление и удаление зон требуют повторной команды с аргументом `confirm` в течение 30 секунд.
 
@@ -189,33 +216,35 @@ spawn-protect:
 
 ### Конфигурация защиты спавна (`spawnprotect.yml`)
 
+Поддерживаются три типа зон: **CIRCLE** (по умолчанию), **RECT**, **POLY**.
+
 ```yaml
 # Bypass по времени игры (в секундах, 0 = выключено)
-# 3600 = 1 час, 86400 = 1 день, 604800 = 1 неделя
 bypass-after-playtime: 0
 
+# Типы зон:
+#   CIRCLE — центр + радиус
+#   RECT   — прямоугольник (min/max углы)
+#   POLY   — полигон (список вершин, минимум 3)
+
 zones:
+  # --- Круглая зона ---
   spawn:
     world: world
+    type: CIRCLE
     center:
       x: 0
       z: 0
     radius: 100
-  
-    # Защита от ломания блоков
-    # mode: BLACKLIST = всё можно кроме списка, WHITELIST = только список
+
     block-break:
       enabled: true
       mode: WHITELIST
       list: []
-  
-    # Защита от установки блоков
     block-place:
       enabled: true
       mode: WHITELIST
       list: []
-  
-    # Защита взаимодействий с блоками
     interact:
       enabled: true
       mode: WHITELIST
@@ -227,23 +256,38 @@ zones:
         - SMITHING_TABLE
         - GRINDSTONE
         - STONECUTTER
-  
-    # Защита взаимодействий с сущностями
     entity-interact:
       enabled: false
       mode: WHITELIST
       list:
         - VILLAGER
         - WANDERING_TRADER
-  
     pvp:
       enabled: true
-  
     explosions:
       enabled: true
-  
     fire-spread:
       enabled: true
+
+  # --- Прямоугольная зона ---
+  # z1:
+  #   type: RECT
+  #   min:
+  #     x: -50
+  #     z: -30
+  #   max:
+  #     x: 50
+  #     z: 30
+
+  # --- Полигональная зона ---
+  # z2:
+  #   type: POLY
+  #   points:
+  #     - {x: 100, z: 100}
+  #     - {x: 200, z: 100}
+  #     - {x: 250, z: 200}
+  #     - {x: 150, z: 250}
+  #     - {x: 50, z: 200}
 ```
 
 ### Файл конфигурации ограничений (`restrictions.yml`)
@@ -442,4 +486,4 @@ database:
 
 - **Автор:** Math_Tereegor
 - **Помощь и поддержка:** MISQZY и 6oJIeH
-- **Версия плагина:** 3.0.4
+- **Версия плагина:** 3.0.5

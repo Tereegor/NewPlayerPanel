@@ -5,9 +5,18 @@
 # Format: time in seconds (3600 = 1 hour, 86400 = 1 day)
 bypass-after-playtime: 0
 
+# Zone types:
+#   CIRCLE - center + radius (default, backward compatible)
+#   RECT   - axis-aligned rectangle (min + max corners)
+#          /spawnprotect pos1 -> /spawnprotect pos2 -> /spawnprotect add <name> rect
+#   POLY   - polygon defined by a list of vertices (minimum 3)
+#          /spawnprotect addpoint <name> (repeat at each vertex, min 3)
+
 zones:
+  # --- Circle zone example (default) ---
   spawn:
     world: world
+    type: CIRCLE
     center:
       x: 0
       z: 0
@@ -54,3 +63,23 @@ zones:
     
     fire-spread:
       enabled: true
+
+#  --- Rectangle zone example ---
+#  z1:
+#    type: RECT
+#    min:
+#      x: -50
+#      z: -30
+#    max:
+#      x: 50
+#      z: 30
+
+#  --- Polygon zone example ---
+#  z2:
+#    type: POLY
+#    points:
+#      - {x: 100, z: 100}
+#      - {x: 200, z: 100}
+#      - {x: 250, z: 200}
+#      - {x: 150, z: 250}
+#      - {x: 50, z: 200}

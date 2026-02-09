@@ -1,6 +1,6 @@
 api-version: '1.20'
 name: NewPlayerPanel
-version: 3.0.4
+version: 3.0.5
 main: newplayerpanel.NewPlayerPanel
 author: Math_Tereegor
 description: Admin panel plugin for player management
