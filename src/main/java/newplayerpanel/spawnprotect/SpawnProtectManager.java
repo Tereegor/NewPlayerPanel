@@ -101,10 +101,6 @@ public class SpawnProtectManager {
                         }
                     }
                 }
-                if (points.size() < 3) {
-                    plugin.getLogger().warning("Spawn Protect: Polygon zone '" + zoneName + "' needs at least 3 points, skipping.");
-                    return null;
-                }
                 zone = new SpawnZone(zoneName, worldName, points);
                 break;
             default:

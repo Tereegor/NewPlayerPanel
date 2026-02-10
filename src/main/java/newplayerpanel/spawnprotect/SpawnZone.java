@@ -220,6 +220,7 @@ public class SpawnZone {
         for (int i = 0, j = n - 1; i < n; j = i++) {
             double xi = points.get(i)[0], zi = points.get(i)[1];
             double xj = points.get(j)[0], zj = points.get(j)[1];
+            if (zi == zj) continue;
             if ((zi > z) != (zj > z) && x < (xj - xi) * (z - zi) / (zj - zi) + xi) {
                 inside = !inside;
             }

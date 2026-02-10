@@ -9,11 +9,14 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class SpawnProtectCommand implements CommandExecutor, TabCompleter {
+public class SpawnProtectCommand implements CommandExecutor, TabCompleter, Listener {
 
     private static final long CONFIRM_EXPIRE_MS = 30_000;
     private static final double DEFAULT_RADIUS = 100;
@@ -344,6 +347,9 @@ public class SpawnProtectCommand implements CommandExecutor, TabCompleter {
                     sender.sendMessage(messageManager.get("spawnprotect-confirm-name-mismatch"));
                     return true;
                 }
+            } else if (manager.getZone(name) == null) {
+                sender.sendMessage(messageManager.get("spawnprotect-remove-error-not-found", "name", name));
+                return true;
             }
             if (manager.removeZone(name)) {
                 sender.sendMessage(messageManager.get("spawnprotect-remove-success", "name", name));
@@ -361,11 +367,10 @@ public class SpawnProtectCommand implements CommandExecutor, TabCompleter {
         if (sender instanceof Player) {
             pendingActions.put(((Player) sender).getUniqueId(),
                     new PendingAction(PendingAction.Type.REMOVE, name));
+            sender.sendMessage(messageManager.get("spawnprotect-remove-confirm", "name", name));
         } else {
             sender.sendMessage(messageManager.get("spawnprotect-console-must-confirm"));
-            return true;
         }
-        sender.sendMessage(messageManager.get("spawnprotect-remove-confirm", "name", name));
         return true;
     }
 
@@ -473,6 +478,10 @@ public class SpawnProtectCommand implements CommandExecutor, TabCompleter {
     private boolean editWorld(CommandSender sender, SpawnZone zone, String value) {
         if (value == null || value.isEmpty()) {
             sender.sendMessage(messageManager.get("spawnprotect-edit-world-usage"));
+            return true;
+        }
+        if (Bukkit.getWorld(value) == null) {
+            sender.sendMessage(messageManager.get("spawnprotect-edit-world-not-found", "world", value));
             return true;
         }
         zone.setWorldName(value);
@@ -590,6 +599,13 @@ public class SpawnProtectCommand implements CommandExecutor, TabCompleter {
         for (String s : options) {
             if (s.toLowerCase().startsWith(lower)) out.add(s);
         }
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        UUID uuid = event.getPlayer().getUniqueId();
+        pos1.remove(uuid);
+        pos2.remove(uuid);
     }
 
     private static class PendingAction {

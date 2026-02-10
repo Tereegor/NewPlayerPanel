@@ -147,6 +147,7 @@ messages:
   spawnprotect-edit-radius-usage: "&cUsage: /spawnprotect edit <name> radius <value>"
   spawnprotect-edit-bool-usage: "&cUsage: /spawnprotect edit <name> {key} <true|false>"
   spawnprotect-edit-world-usage: "&cUsage: /spawnprotect edit <name> world <world>"
+  spawnprotect-edit-world-not-found: "&cWorld '{world}' not found."
   spawnprotect-edit-removepoint-usage: "&cUsage: /spawnprotect edit <name> removepoint <index>"
   spawnprotect-edit-removepoint-min: "&cCannot remove point: polygon must have at least 3 points."
   spawnprotect-edit-removepoint-invalid: "&cInvalid index! Valid: 0 — {max}"

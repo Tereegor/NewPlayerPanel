@@ -88,6 +88,7 @@ public class NewPlayerPanel extends JavaPlugin {
                     spawnProtectModule.getManager(), messageManager);
             getCommand("spawnprotect").setExecutor(spawnProtectCommand);
             getCommand("spawnprotect").setTabCompleter(spawnProtectCommand);
+            getServer().getPluginManager().registerEvents(spawnProtectCommand, this);
         }
     }
     

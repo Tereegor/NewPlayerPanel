@@ -185,11 +185,10 @@ public class RestrictionsListener implements Listener {
                         return;
                     }
                 }
-                break;
             }
         }
     }
-    
+
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerDropItem(PlayerDropItemEvent event) {
         Player player = event.getPlayer();
@@ -204,11 +203,10 @@ public class RestrictionsListener implements Listener {
                     event.setCancelled(true);
                     return;
                 }
-                break;
             }
         }
     }
-    
+
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerPickupItem(EntityPickupItemEvent event) {
         if (!(event.getEntity() instanceof Player)) {
@@ -227,11 +225,10 @@ public class RestrictionsListener implements Listener {
                     event.setCancelled(true);
                     return;
                 }
-                break;
             }
         }
     }
-    
+
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerCommand(PlayerCommandPreprocessEvent event) {
         Player player = event.getPlayer();
@@ -246,11 +243,10 @@ public class RestrictionsListener implements Listener {
                     event.setCancelled(true);
                     return;
                 }
-                break;
             }
         }
     }
-    
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();

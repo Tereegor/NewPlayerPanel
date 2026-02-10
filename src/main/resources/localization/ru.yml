@@ -147,6 +147,7 @@ messages:
   spawnprotect-edit-radius-usage: "&cИспользование: /spawnprotect edit <имя> radius <значение>"
   spawnprotect-edit-bool-usage: "&cИспользование: /spawnprotect edit <имя> {key} <true|false>"
   spawnprotect-edit-world-usage: "&cИспользование: /spawnprotect edit <имя> world <мир>"
+  spawnprotect-edit-world-not-found: "&cМир '{world}' не найден."
   spawnprotect-edit-removepoint-usage: "&cИспользование: /spawnprotect edit <имя> removepoint <индекс>"
   spawnprotect-edit-removepoint-min: "&cНельзя удалить точку: полигон должен иметь минимум 3 точки."
   spawnprotect-edit-removepoint-invalid: "&cНеверный индекс! Допустимые: 0 — {max}"
