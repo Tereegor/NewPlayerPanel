@@ -1,7 +1,6 @@
 package newplayerpanel.villagertracker;
 
 import newplayerpanel.messages.MessageManager;
-import newplayerpanel.util.ActionBarUtil;
 import newplayerpanel.util.TimeUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -205,32 +204,15 @@ public class HistoryCommand implements CommandExecutor, TabCompleter {
             
             if (sender instanceof Player) {
                 Player player = (Player) sender;
-                try {
-                    net.kyori.adventure.text.Component labelComponent = messageManager.getComponent("tracker-entry-coords");
-                    net.kyori.adventure.text.Component villagerTpComponent = messageManager.createClickableVillagerTpComponent(
-                        record.getWorld(), record.getX(), record.getY(), record.getZ());
-                    net.kyori.adventure.text.Component fullComponent = labelComponent.append(villagerTpComponent);
-                    
-                    java.lang.reflect.Method sendMethod = Player.class.getMethod("sendMessage", net.kyori.adventure.text.Component.class);
-                    sendMethod.invoke(player, fullComponent);
-                } catch (NoSuchMethodException | java.lang.reflect.InvocationTargetException | IllegalAccessException e) {
-                    try {
-                        net.md_5.bungee.api.chat.TextComponent labelComponent = new net.md_5.bungee.api.chat.TextComponent(
-                            net.md_5.bungee.api.chat.TextComponent.fromLegacyText(coordsLabel));
-                        net.md_5.bungee.api.chat.TextComponent villagerTpComponent = messageManager.createClickableVillagerTpComponentSpigot(
-                            record.getWorld(), record.getX(), record.getY(), record.getZ());
-                        
-                        net.md_5.bungee.api.chat.BaseComponent[] fullMessage = new net.md_5.bungee.api.chat.BaseComponent[]{
-                            labelComponent,
-                            villagerTpComponent
-                        };
-                        
-                        player.spigot().sendMessage(fullMessage);
-                    } catch (Exception ex) {
-                        sender.sendMessage(coordsLabel + String.format("%.0f, %.0f, %.0f", 
-                            record.getX(), record.getY(), record.getZ()));
-                    }
+                net.md_5.bungee.api.chat.TextComponent labelComponent = new net.md_5.bungee.api.chat.TextComponent("");
+                for (net.md_5.bungee.api.chat.BaseComponent bc : net.md_5.bungee.api.chat.TextComponent.fromLegacyText(coordsLabel)) {
+                    labelComponent.addExtra(bc);
                 }
+                net.md_5.bungee.api.chat.TextComponent villagerTpComponent = messageManager.createClickableVillagerTpComponentSpigot(
+                    record.getWorld(), record.getX(), record.getY(), record.getZ());
+                labelComponent.addExtra(villagerTpComponent);
+                
+                player.spigot().sendMessage(labelComponent);
             } else {
                 sender.sendMessage(coordsLabel + String.format("%.0f, %.0f, %.0f", 
                     record.getX(), record.getY(), record.getZ()));
@@ -277,11 +259,7 @@ public class HistoryCommand implements CommandExecutor, TabCompleter {
                         tradeInfo.append("&a").append(amount).append("x ").append(itemName);
                     }
                     
-                    if (sender instanceof Player) {
-                        ActionBarUtil.sendMessage((Player) sender, tradeInfo.toString());
-                    } else {
-                        sender.sendMessage(tradeInfo.toString());
-                    }
+                    sender.sendMessage(tradeInfo.toString().replace("&", "§"));
                 }
             }
             

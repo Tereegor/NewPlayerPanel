@@ -1,7 +1,6 @@
 package newplayerpanel.restrictions;
 
 import newplayerpanel.messages.MessageManager;
-import newplayerpanel.util.ActionBarUtil;
 import newplayerpanel.util.TimeUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -99,8 +98,8 @@ public class RestrictionsListener implements Listener {
         if (restrictionsManager.isRestricted(player.getUniqueId(), restriction)) {
             long remaining = restrictionsManager.getRestrictionRemainingTime(player.getUniqueId(), restriction.getName());
             String timeFormatted = TimeUtil.formatTimeLocalized(remaining, messageManager);
-            net.kyori.adventure.text.Component message = messageManager.getComponent(messageKey, "time", timeFormatted);
-            ActionBarUtil.sendActionBar(player, message);
+            String message = messageManager.get(messageKey, "time", timeFormatted);
+            player.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR, net.md_5.bungee.api.chat.TextComponent.fromLegacyText(message));
             return true;
         }
         return false;

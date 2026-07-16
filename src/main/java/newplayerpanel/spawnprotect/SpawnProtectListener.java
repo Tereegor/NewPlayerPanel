@@ -1,7 +1,6 @@
 package newplayerpanel.spawnprotect;
 
 import newplayerpanel.messages.MessageManager;
-import newplayerpanel.util.ActionBarUtil;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.*;
@@ -36,7 +35,7 @@ public class SpawnProtectListener implements Listener {
     private void sendDenialMessage(Player player, String messageKey) {
         String message = messageManager.get(messageKey);
         if (message != null && !message.isEmpty() && !message.equals(messageKey)) {
-            ActionBarUtil.sendActionBar(player, message);
+            player.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR, net.md_5.bungee.api.chat.TextComponent.fromLegacyText(message));
         }
     }
     

@@ -1,6 +1,6 @@
 package newplayerpanel.villagertracker;
 
-import newplayerpanel.storage.StorageProvider;
+import newplayerpanel.storage.DatabaseStorage;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.List;
@@ -8,9 +8,9 @@ import java.util.List;
 public class VillagerDataManager {
     
     private final JavaPlugin plugin;
-    private final StorageProvider storageProvider;
+    private final DatabaseStorage storageProvider;
     
-    public VillagerDataManager(JavaPlugin plugin, StorageProvider storageProvider) {
+    public VillagerDataManager(JavaPlugin plugin, DatabaseStorage storageProvider) {
         this.plugin = plugin;
         this.storageProvider = storageProvider;
     }

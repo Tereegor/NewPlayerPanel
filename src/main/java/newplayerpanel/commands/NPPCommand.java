@@ -96,7 +96,7 @@ public class NPPCommand implements CommandExecutor, TabCompleter {
             }
         }
         
-        RestrictionsManager restrictionsManager = plugin.getRestrictionsModule().getRestrictionsManager();
+        RestrictionsManager restrictionsManager = plugin.getRestrictionsManager();
         
         boolean success = restrictionsManager.addNewRestriction(name, type, actionsStr, targets, timeSeconds, isDefault);
         

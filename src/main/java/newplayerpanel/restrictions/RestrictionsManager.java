@@ -1,7 +1,7 @@
 package newplayerpanel.restrictions;
 
 import newplayerpanel.messages.MessageManager;
-import newplayerpanel.storage.StorageProvider;
+import newplayerpanel.storage.DatabaseStorage;
 import org.bukkit.Bukkit;
 import org.bukkit.Statistic;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RestrictionsManager {
     
     private final JavaPlugin plugin;
-    private final StorageProvider storageProvider;
+    private final DatabaseStorage storageProvider;
     private final MessageManager messageManager;
     private File restrictionsFile;
     private FileConfiguration restrictionsConfig;
@@ -28,7 +28,7 @@ public class RestrictionsManager {
     private int cleanupTaskId;
     private long serverStartTime;
     
-    public RestrictionsManager(JavaPlugin plugin, StorageProvider storageProvider, MessageManager messageManager) {
+    public RestrictionsManager(JavaPlugin plugin, DatabaseStorage storageProvider, MessageManager messageManager) {
         this.plugin = plugin;
         this.storageProvider = storageProvider;
         this.messageManager = messageManager;

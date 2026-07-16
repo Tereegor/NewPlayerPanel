@@ -1,7 +1,6 @@
 package newplayerpanel.restrictions;
 
 import newplayerpanel.messages.MessageManager;
-import newplayerpanel.util.ActionBarUtil;
 import newplayerpanel.util.TimeUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -61,14 +60,12 @@ public class RestrictCommand implements CommandExecutor, TabCompleter {
         if (durationSeconds == 0) {
             restrictionsManager.removePlayerRestriction(playerUUID, restrictionName);
             sender.sendMessage(messageManager.get("restrictions-removed", "player", targetPlayer.getName()));
-            ActionBarUtil.sendActionBar(targetPlayer, 
-                messageManager.getComponent("restrictions-notify-removed", "restriction", restrictionName));
+            targetPlayer.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR, net.md_5.bungee.api.chat.TextComponent.fromLegacyText(messageManager.get("restrictions-notify-removed", "restriction", restrictionName)));
         } else {
             restrictionsManager.addPlayerRestriction(playerUUID, restrictionName, durationSeconds);
             String timeStr = TimeUtil.formatTimeLocalized(durationSeconds, messageManager);
             sender.sendMessage(messageManager.get("restrictions-applied", "time", timeStr));
-            ActionBarUtil.sendActionBar(targetPlayer, 
-                messageManager.getComponent("restrictions-notify-applied", "restriction", restrictionName, "time", timeStr));
+            targetPlayer.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR, net.md_5.bungee.api.chat.TextComponent.fromLegacyText(messageManager.get("restrictions-notify-applied", "restriction", restrictionName, "time", timeStr)));
         }
         
         return true;

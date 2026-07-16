@@ -3,7 +3,6 @@ package newplayerpanel.messages;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import newplayerpanel.storage.StorageProvider;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -23,7 +22,7 @@ public class MessageManager {
     private final MiniMessage miniMessage;
     private String currentLanguage;
     
-    public MessageManager(JavaPlugin plugin, StorageProvider storageProvider) {
+    public MessageManager(JavaPlugin plugin) {
         this.plugin = plugin;
         this.messages = new HashMap<>();
         this.miniMessage = MiniMessage.miniMessage();
@@ -84,7 +83,7 @@ public class MessageManager {
     
     public Component getComponent(String key) {
         String message = messages.getOrDefault(key, key);
-        return miniMessage.deserialize(convertLegacyColors(message));
+        return LegacyComponentSerializer.legacyAmpersand().deserialize(convertLegacyColors(message));
     }
     
     public Component getComponent(String key, Object... replacements) {
@@ -98,7 +97,7 @@ public class MessageManager {
             }
         }
         
-        return miniMessage.deserialize(convertLegacyColors(message));
+        return LegacyComponentSerializer.legacyAmpersand().deserialize(convertLegacyColors(message));
     }
     
     public String get(String key) {
@@ -114,28 +113,7 @@ public class MessageManager {
     }
     
     private String convertLegacyColors(String message) {
-        return message.replace("&0", "<black>")
-                .replace("&1", "<dark_blue>")
-                .replace("&2", "<dark_green>")
-                .replace("&3", "<dark_aqua>")
-                .replace("&4", "<dark_red>")
-                .replace("&5", "<dark_purple>")
-                .replace("&6", "<gold>")
-                .replace("&7", "<gray>")
-                .replace("&8", "<dark_gray>")
-                .replace("&9", "<blue>")
-                .replace("&a", "<green>")
-                .replace("&b", "<aqua>")
-                .replace("&c", "<red>")
-                .replace("&d", "<light_purple>")
-                .replace("&e", "<yellow>")
-                .replace("&f", "<white>")
-                .replace("&l", "<bold>")
-                .replace("&m", "<strikethrough>")
-                .replace("&n", "<underline>")
-                .replace("&o", "<italic>")
-                .replace("&k", "<obfuscated>")
-                .replace("&r", "<reset>");
+        return message.replace("§", "&");
     }
     
     public Component createClickableCoordsComponent(String world, double x, double y, double z) {
@@ -145,10 +123,10 @@ public class MessageManager {
         String hoverText = getRaw("tracker-coords-hover").replace("{world}", world);
         String text = getRaw("tracker-entry-coords-click").replace("{coords}", coords);
         
-        Component textComponent = miniMessage.deserialize(convertLegacyColors(text));
+        Component textComponent = LegacyComponentSerializer.legacyAmpersand().deserialize(convertLegacyColors(text));
         Component clickableComponent = textComponent.clickEvent(
             net.kyori.adventure.text.event.ClickEvent.runCommand(command));
-        Component hoverComponent = miniMessage.deserialize(convertLegacyColors(hoverText));
+        Component hoverComponent = LegacyComponentSerializer.legacyAmpersand().deserialize(convertLegacyColors(hoverText));
         clickableComponent = clickableComponent.hoverEvent(
             net.kyori.adventure.text.event.HoverEvent.showText(hoverComponent));
         
@@ -193,11 +171,13 @@ public class MessageManager {
         }
         String text = textRaw.replace("{coords}", coords);
         
-        String miniMessageText = String.format("<click:run_command:'%s'><hover:show_text:'%s'>%s</hover></click>", 
-            command, hoverText.replace("'", "''"), convertLegacyColors(text));
-        return miniMessage.deserialize(miniMessageText);
+        Component textComponent = LegacyComponentSerializer.legacyAmpersand().deserialize(convertLegacyColors(text));
+        Component hoverComponent = LegacyComponentSerializer.legacyAmpersand().deserialize(convertLegacyColors(hoverText));
+        
+        return textComponent
+            .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand(command))
+            .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(hoverComponent));
     }
-    
     public net.md_5.bungee.api.chat.TextComponent createClickableVillagerTpComponentSpigot(String world, double x, double y, double z) {
         String coords = String.format("%.0f, %.0f, %.0f", x, y, z);
         String dimension = getDimensionFromWorld(world);
@@ -212,42 +192,23 @@ public class MessageManager {
         String hoverText = hoverTextRaw.replace("{world}", world);
         
         String textRaw;
-        if (!messages.containsKey("tracker-villager-tp-click")) {
-            textRaw = getRaw("tracker-entry-coords-click");
+        if (!messages.containsKey("tracker-villager-tp-text")) {
+            textRaw = "&b&n[{coords}]";
         } else {
-            textRaw = getRaw("tracker-villager-tp-click");
+            textRaw = getRaw("tracker-villager-tp-text");
         }
-        String text = org.bukkit.ChatColor.translateAlternateColorCodes('&', textRaw.replace("{coords}", coords));
+        String text = textRaw.replace("{coords}", coords).replace("&", "§");
+        hoverText = hoverText.replace("&", "§");
         
-        net.md_5.bungee.api.chat.TextComponent component = new net.md_5.bungee.api.chat.TextComponent(
-            net.md_5.bungee.api.chat.TextComponent.fromLegacyText(text));
+        net.md_5.bungee.api.chat.TextComponent component = new net.md_5.bungee.api.chat.TextComponent(text);
         component.setClickEvent(new net.md_5.bungee.api.chat.ClickEvent(
             net.md_5.bungee.api.chat.ClickEvent.Action.RUN_COMMAND, command));
+        
+        net.md_5.bungee.api.chat.BaseComponent[] hoverComponents = net.md_5.bungee.api.chat.TextComponent.fromLegacyText(hoverText);
         component.setHoverEvent(new net.md_5.bungee.api.chat.HoverEvent(
             net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT, 
-            new net.md_5.bungee.api.chat.hover.content.Text(
-                org.bukkit.ChatColor.translateAlternateColorCodes('&', hoverText))));
-        
-        return component;
-    }
-    
-    @Deprecated
-    public net.md_5.bungee.api.chat.TextComponent createClickableCoords(String world, double x, double y, double z) {
-        String coords = String.format("%.0f, %.0f, %.0f", x, y, z);
-        String command = String.format("/tp %.0f %.0f %.0f", x, y, z);
-        
-        String rawText = get("tracker-entry-coords-click", "coords", coords);
-        net.md_5.bungee.api.chat.TextComponent component = new net.md_5.bungee.api.chat.TextComponent(
-            net.md_5.bungee.api.chat.TextComponent.fromLegacyText(rawText));
-        
-        String hoverText = get("tracker-coords-hover", "world", world);
-        
-        component.setClickEvent(new net.md_5.bungee.api.chat.ClickEvent(
-            net.md_5.bungee.api.chat.ClickEvent.Action.RUN_COMMAND, command));
-        component.setHoverEvent(new net.md_5.bungee.api.chat.HoverEvent(
-            net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT, 
-            new net.md_5.bungee.api.chat.hover.content.Text(hoverText)));
-        
+            new net.md_5.bungee.api.chat.hover.content.Text(hoverComponents)));
+            
         return component;
     }
     

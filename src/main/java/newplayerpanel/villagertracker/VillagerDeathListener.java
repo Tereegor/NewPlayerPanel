@@ -348,44 +348,22 @@ public class VillagerDeathListener implements Listener {
     }
     
     private void notifyPlayers(String killerName, String villagerType, String world, double x, double y, double z) {
-        String notifyText = messageManager.get("tracker-notify", 
-            "player", killerName,
-            "type", villagerType,
-            "world", world);
-        
         for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
             if (onlinePlayer.hasPermission("newplayerpanel.notify")) {
-                try {
-                    net.kyori.adventure.text.Component notifyComponent = messageManager.getComponent("tracker-notify",
-                        "player", killerName,
-                        "type", villagerType,
-                        "world", world);
-                    net.kyori.adventure.text.Component spaceComponent = net.kyori.adventure.text.Component.text(" ");
-                    net.kyori.adventure.text.Component villagerTpComponent = messageManager.createClickableVillagerTpComponent(world, x, y, z);
-                    net.kyori.adventure.text.Component fullMessage = notifyComponent.append(spaceComponent).append(villagerTpComponent);
-                    
-                    java.lang.reflect.Method sendMethod = Player.class.getMethod("sendMessage", net.kyori.adventure.text.Component.class);
-                    sendMethod.invoke(onlinePlayer, fullMessage);
-                } catch (NoSuchMethodException | java.lang.reflect.InvocationTargetException | IllegalAccessException e) {
-                    try {
-                        net.md_5.bungee.api.chat.TextComponent notifyComponent = new net.md_5.bungee.api.chat.TextComponent(
-                            net.md_5.bungee.api.chat.TextComponent.fromLegacyText(notifyText));
-                        net.md_5.bungee.api.chat.TextComponent spaceComponent = new net.md_5.bungee.api.chat.TextComponent(" ");
-                        net.md_5.bungee.api.chat.TextComponent villagerTpComponent = messageManager.createClickableVillagerTpComponentSpigot(world, x, y, z);
-                        
-                        net.md_5.bungee.api.chat.BaseComponent[] fullMessage = new net.md_5.bungee.api.chat.BaseComponent[]{
-                            notifyComponent,
-                            spaceComponent,
-                            villagerTpComponent
-                        };
-                        
-                        onlinePlayer.spigot().sendMessage(fullMessage);
-                    } catch (Exception ex) {
-                        String coords = String.format("%.0f, %.0f, %.0f", x, y, z);
-                        String fullText = notifyText + coords;
-                        newplayerpanel.util.ActionBarUtil.sendMessage(onlinePlayer, fullText);
-                    }
+                String notifyText = messageManager.get("tracker-notify", 
+                    "player", killerName,
+                    "type", villagerType,
+                    "world", world);
+                net.md_5.bungee.api.chat.TextComponent notifyComponent = new net.md_5.bungee.api.chat.TextComponent("");
+                for (net.md_5.bungee.api.chat.BaseComponent bc : net.md_5.bungee.api.chat.TextComponent.fromLegacyText(notifyText)) {
+                    notifyComponent.addExtra(bc);
                 }
+                net.md_5.bungee.api.chat.TextComponent spaceComponent = new net.md_5.bungee.api.chat.TextComponent(" ");
+                net.md_5.bungee.api.chat.TextComponent villagerTpComponent = messageManager.createClickableVillagerTpComponentSpigot(world, x, y, z);
+                notifyComponent.addExtra(spaceComponent);
+                notifyComponent.addExtra(villagerTpComponent);
+                
+                onlinePlayer.spigot().sendMessage(notifyComponent);
             }
         }
     }

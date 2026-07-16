@@ -1,196 +1,196 @@
-# NewPlayerPanel v3.0.6
+# NewPlayerPanel v3.1.0
 
-## Возможности
+## Features
 
-### Модуль отслеживания жителей
+### Villager Tracker Module
 
-Модуль отслеживания жителей предоставляет комплексный мониторинг и логирование событий смерти жителей:
+The Villager Tracker module provides comprehensive monitoring and logging of villager death events:
 
-- **Запись событий смерти**: Автоматически отслеживает все смерти жителей с полными метаданными
-- **Идентификация убийцы**: Записывает имя игрока, UUID и связанную информацию
-- **Отслеживание местоположения**: Сохраняет точные координаты (X, Y, Z) и название мира для каждого события
-- **Определение типа жителя**: Определяет и записывает конкретный тип жителя
-- **Сохранение зачарований**: Захватывает данные о зачарованиях из торговли с жителями
-- **Интерактивные координаты**: Кликабельные координаты для мгновенной телепортации к месту смерти жителя
-- **Кликабельный телепорт в уведомлениях**: Координаты в уведомлениях о смерти жителей кликабельны для быстрой телепортации
-- **Автоматическое определение измерения**: Автоматическое определение правильного измерения (overworld/nether/end) для корректной телепортации между мирами
-- **Расширенный поиск**: Запрос записей по имени игрока, координатам или комбинированным критериям
-- **Система уведомлений**: Уведомления в реальном времени для администраторов с соответствующими разрешениями
-- **Очистка данных**: Автоматическая очистка исторических записей на основе временных критериев
+- **Death Event Recording**: Automatically tracks all villager deaths with full metadata
+- **Killer Identification**: Records player name, UUID, and related information
+- **Location Tracking**: Saves exact coordinates (X, Y, Z) and world name for each event
+- **Villager Type Detection**: Detects and logs the specific type of villager
+- **Enchantment Preservation**: Captures enchantment data from villager trades
+- **Interactive Coordinates**: Clickable coordinates for instant teleportation to the villager death location
+- **Clickable Teleport in Notifications**: Coordinates in villager death notifications are clickable for quick teleportation
+- **Automatic Dimension Detection**: Automatically determines the correct dimension (overworld/nether/end) for proper cross-world teleportation
+- **Advanced Search**: Query records by player name, coordinates, or combined criteria
+- **Notification System**: Real-time notifications for administrators with appropriate permissions
+- **Data Purging**: Automatic cleanup of historical records based on time criteria
 
-### Система ограничений игроков
+### Player Restrictions System
 
-Продвинутая система ограничений, позволяющая точный контроль над действиями игроков:
+An advanced restrictions system allowing precise control over player actions:
 
-- **Множественные типы ограничений**: Поддержка ограничений EQUIPMENT, ITEM, ENTITY и COMMAND
-- **Ограничения по умолчанию**: Автоматическое применение ограничений на основе времени игрока на сервере
-- **Временной контроль**: Настройка временных или постоянных ограничений
-- **Управление в игре**: Создание и изменение ограничений через командный интерфейс
-- **Детализация действий**: Точная настройка ограничений с использованием типов действий (DAMAGE, USE, DROP, EQUIP, EXECUTE)
-- **Персональные переопределения**: Применение индивидуальных ограничений, которые переопределяют настройки по умолчанию
-- **Применение в реальном времени**: Ограничения проверяются и применяются каждые 0.1 секунды
-- **Просмотр игроками**: Игроки могут просматривать свои активные ограничения с помощью `/restrictions`
-- **Временные ограничения по умолчанию**: Ограничения по умолчанию считают время с первого входа игрока, а не с запуска сервера
+- **Multiple Restriction Types**: Support for EQUIPMENT, ITEM, ENTITY, and COMMAND restrictions
+- **Default Restrictions**: Automatically apply restrictions based on a player's playtime on the server
+- **Time Control**: Set temporary or permanent restrictions
+- **In-Game Management**: Create and modify restrictions via a command interface
+- **Action Granularity**: Fine-tune restrictions using action types (DAMAGE, USE, DROP, EQUIP, EXECUTE)
+- **Personal Overrides**: Apply individual restrictions that override default settings
+- **Real-Time Enforcement**: Restrictions are checked and enforced every 0.1 seconds
+- **Player Viewing**: Players can view their active restrictions using `/restrictions`
+- **Time-based Default Restrictions**: Default restrictions count time from the player's first join, not from server startup
 
-### Защита спавна
+### Spawn Protection
 
-Гибкая система защиты зон спавна с детальной настройкой:
+Flexible spawn protection system with detailed configuration:
 
-- **Множественные зоны**: Создание неограниченного количества защищённых зон
-- **Три типа геометрии зон**:
-  - **CIRCLE** — круглая зона (центр + радиус, по умолчанию)
-  - **RECT** — прямоугольная зона (два угла, задаются через `pos1`/`pos2`)
-  - **POLY** — полигональная зона (произвольное количество вершин, минимум 3)
-- **Редактирование зон**: Изменение радиуса, центра, мира, PvP/взрывов/огня, удаление вершин полигона — всё в игре
-- **Команды управления**: Список зон, добавление и удаление зон (с подтверждением), перезагрузка конфига
-- **Info и playtime**: Любой игрок может узнать состояние модуля и своё время в игре; админы — время любого игрока
-- **Защита блоков**: Контроль ломания и установки блоков (**BLACKLIST**/*WHITELIST* режимы)
-- **Защита взаимодействий**: Настройка разрешённых блоков для взаимодействия (верстаки, наковальни, эндерсундуки и т.д.)
-- **Защита от PvP**: Запрет PvP в защищённых зонах
-- **Защита от взрывов**: Блокировка TNT, криперов, кристаллов Энда и других взрывов
-- **Защита от огня**: Предотвращение распространения огня
-- **Bypass по времени игры**: Автоматическое снятие ограничений после определённого времени игры на сервере
-- **Bypass по правам**: Возможность обхода защиты для администраторов
+- **Multiple Zones**: Create an unlimited number of protected zones
+- **Three Zone Geometry Types**:
+  - **CIRCLE** — circular zone (center + radius, default)
+  - **RECT** — rectangular zone (two corners, set via `pos1`/`pos2`)
+  - **POLY** — polygonal zone (arbitrary number of vertices, minimum 3)
+- **Zone Editing**: Change radius, center, world, PvP/explosions/fire, remove polygon vertices — all in-game
+- **Management Commands**: List zones, add and remove zones (with confirmation), reload config
+- **Info and Playtime**: Any player can check the module status and their playtime; admins can check any player's playtime
+- **Block Protection**: Control block breaking and placing (**BLACKLIST**/*WHITELIST* modes)
+- **Interaction Protection**: Configure allowed blocks for interaction (crafting tables, anvils, ender chests, etc.)
+- **PvP Protection**: Disable PvP in protected zones
+- **Explosion Protection**: Block TNT, creepers, end crystals, and other explosions
+- **Fire Protection**: Prevent fire spread
+- **Playtime Bypass**: Automatically lift restrictions after a certain amount of playtime on the server
+- **Permission Bypass**: Ability to bypass protection for administrators
 
-### Системы хранения
+### Storage Systems
 
-Несколько бэкендов хранения для максимальной гибкости:
+Multiple storage backends for maximum flexibility:
 
-- **Хранение YAML/JSON**: Файловое хранение с использованием формата JSON в директории данных плагина
-- **База данных H2**: Легковесная встроенная база данных SQLite (по умолчанию, не требует настройки)
-- **Поддержка MySQL**: Полная интеграция с базой данных MySQL с пулом соединений
-- **Поддержка MariaDB**: Нативная поддержка базы данных MariaDB с оптимизированными запросами
+- **YAML/JSON Storage**: File-based storage using JSON format in the plugin data directory
+- **H2 Database**: Lightweight embedded SQLite database (default, requires no setup)
+- **MySQL Support**: Full integration with MySQL database with connection pooling
+- **MariaDB Support**: Native support for MariaDB database with optimized queries
 
-### Локализация
+### Localization
 
-Полная поддержка интернационализации:
+Full support for internationalization:
 
-- **Многоязычность**: Полная поддержка русского и английского языков включена
-- **Расширяемость**: Легко добавить дополнительные языки через файлы сообщений
-- **Настраиваемые сообщения**: Весь пользовательский текст может быть изменен через конфигурацию
-- **Переключение языка в реальном времени**: Изменение языка без перезапуска сервера
+- **Multilingual**: Full support for English and Russian languages included
+- **Extensibility**: Easily add additional languages via message files
+- **Customizable Messages**: All user-facing text can be modified via configuration
+- **Real-Time Language Switching**: Change language without restarting the server
 
 ---
 
-## Команды
+## Commands
 
-### Административные команды
+### Administrative Commands
 
-| Команда          | Описание                                                                                            | Разрешение     | Пример использования                                                   |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------ | ----------------------------------------------------------------------------------------- |
-| `/npp reload`         | Перезагружает конфигурацию плагина и применяет изменения | `newplayerpanel.admin` | `/npp reload`                                                                           |
-| `/npp addrestriction` | Создает новое определение ограничения                                     | `newplayerpanel.admin` | `/npp addrestriction elytra_ban EQUIPMENT EQUIP minecraft:elytra time:-1 default:false` |
+| Command | Description | Permission | Usage Example |
+| --- | --- | --- | --- |
+| `/npp reload` | Reloads the plugin configuration and applies changes | `newplayerpanel.admin` | `/npp reload` |
+| `/npp addrestriction` | Creates a new restriction definition | `newplayerpanel.admin` | `/npp addrestriction elytra_ban EQUIPMENT EQUIP minecraft:elytra time:-1 default:false` |
 
-**Синтаксис команды:**
+**Command Syntax:**
 
 ```
 /npp addrestriction <name> <type> <actions> [targets...] [time:N] [default:true/false]
 ```
 
-### Команды истории
+### History Commands
 
-| Команда            | Описание                                                                            | Разрешение             | Пример использования |
-| ------------------------- | ------------------------------------------------------------------------------------------- | -------------------------------- | --------------------------------------- |
-| `/history`              | Отображает все записи о смертях жителей                   | `newplayerpanel.history`       | `/history`                            |
-| `/history <player>`     | Показывает записи для конкретного игрока                | `newplayerpanel.history`       | `/history Steve`                      |
-| `/history <x> <y> <z>`  | Показывает записи рядом с координатами                    | `newplayerpanel.history`       | `/history 100 64 200`                 |
-| `/history coords`       | Показывает записи в вашем текущем местоположении | `newplayerpanel.history`       | `/history coords`                     |
-| `/history purge <time>` | Удаляет записи старше указанного времени                | `newplayerpanel.history.purge` | `/history purge 7d`                   |
+| Command | Description | Permission | Usage Example |
+| --- | --- | --- | --- |
+| `/history` | Displays all villager death records | `newplayerpanel.history` | `/history` |
+| `/history <player>` | Shows records for a specific player | `newplayerpanel.history` | `/history Steve` |
+| `/history <x> <y> <z>` | Shows records near coordinates | `newplayerpanel.history` | `/history 100 64 200` |
+| `/history coords` | Shows records at your current location | `newplayerpanel.history` | `/history coords` |
+| `/history purge <time>` | Deletes records older than the specified time | `newplayerpanel.history.purge` | `/history purge 7d` |
 
-**Примеры формата времени:**
+**Time Format Examples:**
 
-- `7d` - 7 дней
-- `30d` - 30 дней
-- `1h` - 1 час
-- `2w` - 2 недели
-- `1M` - 1 месяц
+- `7d` - 7 days
+- `30d` - 30 days
+- `1h` - 1 hour
+- `2w` - 2 weeks
+- `1M` - 1 month
 
-### Команды управления ограничениями
+### Restrictions Management Commands
 
-| Команда                              | Описание                                                          | Разрешение                        | Пример использования |
-| ------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------- | --------------------------------------- |
-| `/restrict <player> <restriction> <time>` | Применяет ограничение к игроку                 | `newplayerpanel.restrictions.restrict`    | `/restrict Steve elytra_ban 3600`     |
-| `/unrestrict <player> <restriction\|all>`  | Удаляет ограничение(я) у игрока                 | `newplayerpanel.restrictions.restrict`    | `/unrestrict Steve elytra_ban`        |
-| `/restrictions`                           | Отображает ваши активные ограничения     | `newplayerpanel.restrictions.view`        | `/restrictions`                       |
-| `/restrictions [player]`                  | Отображает активные ограничения игрока | `newplayerpanel.restrictions.view.others` | `/restrictions Steve`                 |
+| Command | Description | Permission | Usage Example |
+| --- | --- | --- | --- |
+| `/restrict <player> <restriction> <time>` | Applies a restriction to a player | `newplayerpanel.restrictions.restrict` | `/restrict Steve elytra_ban 3600` |
+| `/unrestrict <player> <restriction\|all>` | Removes restriction(s) from a player | `newplayerpanel.restrictions.restrict` | `/unrestrict Steve elytra_ban` |
+| `/restrictions` | Displays your active restrictions | `newplayerpanel.restrictions.view` | `/restrictions` |
+| `/restrictions [player]` | Displays a player's active restrictions | `newplayerpanel.restrictions.view.others` | `/restrictions Steve` |
 
-**Значения времени:**
+**Time Values:**
 
-- `-1` - Постоянное ограничение
-- `0` - Удалить ограничение
-- `>0` - Длительность в секундах (например, `3600` = 1 час)
+- `-1` - Permanent restriction
+- `0` - Remove restriction
+- `>0` - Duration in seconds (e.g., `3600` = 1 hour)
 
-**Примечание:** Игроки могут просматривать свои ограничения, используя `/restrictions` без аргументов. Администраторы могут просматривать ограничения других игроков, указав имя игрока.
+**Note:** Players can view their restrictions using `/restrictions` with no arguments. Administrators can view other players' restrictions by specifying the player name.
 
-### Команды защиты спавна
+### Spawn Protection Commands
 
-Доступны всем (без специального разрешения):
+Available to everyone (no special permission required):
 
-| Команда | Описание | Пример |
+| Command | Description | Example |
 | ------- | -------- | ------ |
-| `/spawnprotect info` | Информация о модуле: включён/выключен, число зон, настройка обхода по времени в игре | `/spawnprotect info` |
-| `/spawnprotect playtime` | Ваше время в игре и (если включён bypass) оставшееся время до обхода ограничений | `/spawnprotect playtime` |
+| `/spawnprotect info` | Module info: enabled/disabled, zone count, playtime bypass setting | `/spawnprotect info` |
+| `/spawnprotect playtime` | Your playtime and (if bypass is enabled) remaining time until bypass | `/spawnprotect playtime` |
 
-Только для администраторов (`newplayerpanel.spawnprotect.admin`):
+Administrators only (`newplayerpanel.spawnprotect.admin`):
 
-| Команда | Описание | Пример |
+| Command | Description | Example |
 | ------- | -------- | ------ |
-| `/spawnprotect playtime [игрок]` | Время в игре любого игрока | `/spawnprotect playtime Steve` |
-| `/spawnprotect list` | Список зон с типом и размерами | `/spawnprotect list` |
-| `/spawnprotect add <имя> [радиус]` | Добавить круглую зону (подтверждение: `... add <имя> confirm`) | `/spawnprotect add spawn 100` |
-| `/spawnprotect add <имя> rect` | Добавить прямоугольную зону по `pos1`/`pos2` (подтверждение: `... add <имя> rect confirm`) | `/spawnprotect add market rect` |
-| `/spawnprotect remove <имя>` | Удалить зону (подтверждение: `... remove <имя> confirm`) | `/spawnprotect remove spawn` |
-| `/spawnprotect pos1` | Запомнить 1-й угол прямоугольника (текущая позиция) | `/spawnprotect pos1` |
-| `/spawnprotect pos2` | Запомнить 2-й угол прямоугольника (текущая позиция) | `/spawnprotect pos2` |
-| `/spawnprotect addpoint <имя>` | Добавить вершину полигональной зоны (создаёт зону при первой точке, далее добавляет) | `/spawnprotect addpoint arena` |
-| `/spawnprotect edit <зона> <параметр> <значение>` | Редактировать параметр зоны | `/spawnprotect edit spawn radius 150` |
-| `/spawnprotect reload` | Перезагрузить конфигурацию защиты спавна | `/spawnprotect reload` |
+| `/spawnprotect playtime [player]` | Any player's playtime | `/spawnprotect playtime Steve` |
+| `/spawnprotect list` | List of zones with type and size | `/spawnprotect list` |
+| `/spawnprotect add <name> [radius]` | Add a circular zone (confirmation: `... add <name> confirm`) | `/spawnprotect add spawn 100` |
+| `/spawnprotect add <name> rect` | Add a rectangular zone using `pos1`/`pos2` (confirmation: `... add <name> rect confirm`) | `/spawnprotect add market rect` |
+| `/spawnprotect remove <name>` | Remove a zone (confirmation: `... remove <name> confirm`) | `/spawnprotect remove spawn` |
+| `/spawnprotect pos1` | Remember the 1st corner of a rectangle (current position) | `/spawnprotect pos1` |
+| `/spawnprotect pos2` | Remember the 2nd corner of a rectangle (current position) | `/spawnprotect pos2` |
+| `/spawnprotect addpoint <name>` | Add a vertex to a polygonal zone (creates the zone on the first point, then adds) | `/spawnprotect addpoint arena` |
+| `/spawnprotect edit <zone> <parameter> <value>` | Edit a zone parameter | `/spawnprotect edit spawn radius 150` |
+| `/spawnprotect reload` | Reload spawn protection configuration | `/spawnprotect reload` |
 
-**Создание зон:**
+**Zone Creation:**
 
-- **Круглая (CIRCLE):** `/spawnprotect add <имя> [радиус]` → `... add <имя> confirm`
-- **Прямоугольная (RECT):** встать в 1-й угол → `/spawnprotect pos1` → встать во 2-й угол → `/spawnprotect pos2` → `/spawnprotect add <имя> rect` → `... add <имя> rect confirm`
-- **Полигональная (POLY):** обойти вершины и на каждой вызвать `/spawnprotect addpoint <имя>` (минимум 3 точки)
+- **Circular (CIRCLE):** `/spawnprotect add <name> [radius]` → `... add <name> confirm`
+- **Rectangular (RECT):** stand in 1st corner → `/spawnprotect pos1` → stand in 2nd corner → `/spawnprotect pos2` → `/spawnprotect add <name> rect` → `... add <name> rect confirm`
+- **Polygonal (POLY):** walk around the vertices and run `/spawnprotect addpoint <name>` at each one (minimum 3 points)
 
-**Редактирование зон (`edit`):**
+**Zone Editing (`edit`):**
 
-| Параметр | Описание | Пример |
+| Parameter | Description | Example |
 | -------- | -------- | ------ |
-| `radius` | Радиус зоны (CIRCLE) | `/spawnprotect edit spawn radius 200` |
-| `center` | Центр зоны = текущая позиция (CIRCLE) | `/spawnprotect edit spawn center` |
-| `world` | Мир зоны = текущий мир | `/spawnprotect edit spawn world` |
-| `pvp` | Защита от PvP | `/spawnprotect edit spawn pvp true` |
-| `explosions` | Защита от взрывов | `/spawnprotect edit spawn explosions false` |
-| `fire-spread` | Защита от огня | `/spawnprotect edit spawn fire-spread true` |
-| `removepoint` | Удалить вершину полигона по индексу (POLY) | `/spawnprotect edit arena removepoint 2` |
+| `radius` | Zone radius (CIRCLE) | `/spawnprotect edit spawn radius 200` |
+| `center` | Zone center = current position (CIRCLE) | `/spawnprotect edit spawn center` |
+| `world` | Zone world = current world | `/spawnprotect edit spawn world` |
+| `pvp` | PvP protection | `/spawnprotect edit spawn pvp true` |
+| `explosions` | Explosion protection | `/spawnprotect edit spawn explosions false` |
+| `fire-spread` | Fire protection | `/spawnprotect edit spawn fire-spread true` |
+| `removepoint` | Remove a polygon vertex by index (POLY) | `/spawnprotect edit arena removepoint 2` |
 
-**Подтверждение:** Добавление и удаление зон требуют повторной команды с аргументом `confirm` в течение 30 секунд.
-
----
-
-## Разрешения
-
-| Узел разрешения               | Описание                                                                        | Доступ по умолчанию |
-| ------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------ |
-| `newplayerpanel.admin`                    | Полный административный доступ к командам `/npp` | Только операторы      |
-| `newplayerpanel.history`                  | Просмотр записей истории смертей жителей            | Только операторы      |
-| `newplayerpanel.history.purge`            | Разрешение на очистку старых записей истории     | Только операторы      |
-| `newplayerpanel.notify`                   | Получение уведомлений о смертях жителей              | Только операторы      |
-| `newplayerpanel.restrictions.bypass`      | Обход всех ограничений из конфигурации                | Только операторы      |
-| `newplayerpanel.restrictions.restrict`    | Применение и удаление ограничений игроков          | Только операторы      |
-| `newplayerpanel.restrictions.view`        | Просмотр ваших активных ограничений                     | Все игроки                  |
-| `newplayerpanel.restrictions.view.others` | Просмотр ограничений других игроков                     | Только операторы      |
-| `newplayerpanel.spawnprotect.admin`      | Управление зонами (list, add, remove, reload), просмотр времени в игре любого игрока | Только операторы      |
-| `newplayerpanel.spawnprotect.bypass`      | Обход защиты спавна                                                    | Только операторы      |
+**Confirmation:** Adding and removing zones requires a repeated command with the `confirm` argument within 30 seconds.
 
 ---
 
-## Конфигурация
+## Permissions
 
-### Основной файл конфигурации (`config.yml`)
+| Permission Node | Description | Default Access |
+| --- | --- | --- |
+| `newplayerpanel.admin` | Full administrative access to `/npp` commands | Operators only |
+| `newplayerpanel.history` | View villager death history records | Operators only |
+| `newplayerpanel.history.purge` | Permission to purge old history records | Operators only |
+| `newplayerpanel.notify` | Receive notifications about traded villager deaths | Operators only |
+| `newplayerpanel.restrictions.bypass` | Bypass all restrictions from configuration | Operators only |
+| `newplayerpanel.restrictions.restrict` | Apply and remove player restrictions | Operators only |
+| `newplayerpanel.restrictions.view` | View your own active restrictions | All players |
+| `newplayerpanel.restrictions.view.others` | View other players' restrictions | Operators only |
+| `newplayerpanel.spawnprotect.admin` | Manage zones (list, add, remove, reload), view any player's playtime | Operators only |
+| `newplayerpanel.spawnprotect.bypass` | Bypass spawn protection | Operators only |
+
+---
+
+## Configuration
+
+### Main Configuration File (`config.yml`)
 
 ```yaml
-language: ru
+language: en
 storage: H2
 database:
   host: localhost
@@ -214,21 +214,21 @@ spawn-protect:
   enabled: true
 ```
 
-### Конфигурация защиты спавна (`spawnprotect.yml`)
+### Spawn Protection Configuration (`spawnprotect.yml`)
 
-Поддерживаются три типа зон: **CIRCLE** (по умолчанию), **RECT**, **POLY**.
+Three zone types are supported: **CIRCLE** (default), **RECT**, **POLY**.
 
 ```yaml
-# Bypass по времени игры (в секундах, 0 = выключено)
+# Playtime bypass (in seconds, 0 = disabled)
 bypass-after-playtime: 0
 
-# Типы зон:
-#   CIRCLE — центр + радиус
-#   RECT   — прямоугольник (min/max углы)
-#   POLY   — полигон (список вершин, минимум 3)
+# Zone types:
+#   CIRCLE — center + radius
+#   RECT   — rectangle (min/max corners)
+#   POLY   — polygon (list of vertices, min 3)
 
 zones:
-  # --- Круглая зона ---
+  # --- Circular Zone ---
   spawn:
     world: world
     type: CIRCLE
@@ -269,7 +269,7 @@ zones:
     fire-spread:
       enabled: true
 
-  # --- Прямоугольная зона ---
+  # --- Rectangular Zone ---
   # z1:
   #   type: RECT
   #   min:
@@ -279,7 +279,7 @@ zones:
   #     x: 50
   #     z: 30
 
-  # --- Полигональная зона ---
+  # --- Polygonal Zone ---
   # z2:
   #   type: POLY
   #   points:
@@ -290,7 +290,7 @@ zones:
   #     - {x: 50, z: 200}
 ```
 
-### Файл конфигурации ограничений (`restrictions.yml`)
+### Restrictions Configuration File (`restrictions.yml`)
 
 ```yaml
 restrictions:
@@ -316,105 +316,105 @@ restrictions:
     default: false
 ```
 
-### Типы ограничений
+### Restriction Types
 
-| Тип        | Описание                                                                                       | Поле цели |
-| ------------- | ------------------------------------------------------------------------------------------------------ | ----------------- |
-| `EQUIPMENT` | Ограничивает экипировку предметов в слотах брони/элитр | `item`          |
-| `ITEM`      | Ограничивает использование или размещение предметов     | `item`          |
-| `ENTITY`    | Ограничивает взаимодействие с сущностями                          | `entity`        |
-| `COMMAND`   | Ограничивает выполнение команд                                             | `command`       |
+| Type | Description | Target Field |
+| --- | --- | --- |
+| `EQUIPMENT` | Restricts equipping items in armor/elytra slots | `item` |
+| `ITEM` | Restricts using or placing items | `item` |
+| `ENTITY` | Restricts interaction with entities | `entity` |
+| `COMMAND` | Restricts executing commands | `command` |
 
-### Типы действий
+### Action Types
 
-| Действие | Описание                                                              |
-| ---------------- | ----------------------------------------------------------------------------- |
-| `DAMAGE`       | Нанесение урона сущностям                              |
-| `USE`          | Использование или размещение предметов     |
-| `DROP`         | Выбрасывание предметов                                   |
-| `EQUIP`        | Экипировка предметов в слотах брони/элитр |
-| `EXECUTE`      | Выполнение команд                                             |
+| Action | Description |
+| --- | --- |
+| `DAMAGE` | Dealing damage to entities |
+| `USE` | Using or placing items |
+| `DROP` | Dropping items |
+| `EQUIP` | Equipping items in armor/elytra slots |
+| `EXECUTE` | Executing commands |
 
-### Логика ограничений
+### Restriction Logic
 
-**Ограничения по умолчанию:**
+**Default Restrictions:**
 
-- Когда `default: true`, ограничения применяются автоматически ко всем игрокам
-- Время рассчитывается от **первого входа игрока** (не от времени запуска сервера)
-- Пример: Если `time: 3600` (1 час), ограничение применяется в течение первого часа после первого входа игрока
-- Если `time: -1`, ограничение постоянно для всех игроков
-- Ограничения по умолчанию автоматически удаляются при истечении времени
+- When `default: true`, restrictions are automatically applied to all players
+- Time is calculated from the **player's first join** (not from server startup)
+- Example: If `time: 3600` (1 hour), the restriction is applied during the first hour after the player's first join
+- If `time: -1`, the restriction is permanent for all players
+- Default restrictions are automatically removed when the time expires
 
-**Персональные ограничения:**
+**Personal Restrictions:**
 
-- Применяются через команду `/restrict`
-- Время рассчитывается от **момента применения** (не от первого входа игрока)
-- Персональные ограничения **переопределяют** ограничения по умолчанию
-- Если у игрока есть персональное ограничение, ограничения по умолчанию с тем же именем игнорируются
-- Персональные ограничения могут быть удалены вручную с помощью `/unrestrict`
+- Applied via the `/restrict` command
+- Time is calculated from the **moment of application** (not from first join)
+- Personal restrictions **override** default restrictions
+- If a player has a personal restriction, default restrictions with the same name are ignored
+- Personal restrictions can be manually removed using `/unrestrict`
 
-**Порядок приоритета:**
+**Priority Order:**
 
-1. Персональные ограничения (наивысший приоритет)
-2. Ограничения по умолчанию (если персонального ограничения нет)
+1. Personal restrictions (highest priority)
+2. Default restrictions (if no personal restriction exists)
 
-**Просмотр ограничений:**
+**Viewing Restrictions:**
 
-- Игроки могут просматривать свои ограничения: `/restrictions`
-- Администраторы могут просматривать ограничения любого игрока: `/restrictions <player>`
-- Отображаются как персональные, так и ограничения по умолчанию с оставшимся временем
+- Players can view their own restrictions: `/restrictions`
+- Administrators can view any player's restrictions: `/restrictions <player>`
+- Both personal and default restrictions are displayed with remaining time
 
 ---
 
-## Системы хранения
+## Storage Systems
 
-### Хранение YAML/JSON
+### YAML/JSON Storage
 
-Файловое хранение с использованием формата JSON. Все данные хранятся в `plugins/NewPlayerPanel/data/`:
+File-based storage using JSON format. All data is stored in `plugins/NewPlayerPanel/data/`:
 
-- `messages.json` - Сообщения локализации
-- `villager_deaths.json` - Записи о смертях жителей
-- `restrictions.json` - Данные об ограничениях игроков
+- `messages.json` - Localization messages
+- `villager_deaths.json` - Villager death records
+- `restrictions.json` - Player restriction data
 
-**Преимущества:**
+**Advantages:**
 
-- Не требуется настройка базы данных
-- Легко создавать резервные копии (копировать файлы)
-- Читаемый формат
+- No database setup required
+- Easy to backup (just copy files)
+- Readable format
 
-**Конфигурация:**
+**Configuration:**
 
 ```yaml
 storage: YAML
 ```
 
-### База данных H2 (По умолчанию)
+### H2 Database (Default)
 
-Встроенная база данных SQLite, хранящаяся как `plugins/NewPlayerPanel/database.db`.
+Embedded SQLite database, stored as `plugins/NewPlayerPanel/database.db`.
 
-**Преимущества:**
+**Advantages:**
 
-- Нет внешних зависимостей
-- Автоматическая настройка
-- Хорошая производительность для малых и средних серверов
+- No external dependencies
+- Automatic setup
+- Good performance for small to medium servers
 
-**Конфигурация:**
+**Configuration:**
 
 ```yaml
 storage: H2
 ```
 
-### База данных MySQL
+### MySQL Database
 
-Полная интеграция с базой данных MySQL с пулом соединений через HikariCP.
+Full integration with MySQL database with connection pooling via HikariCP.
 
-**Преимущества:**
+**Advantages:**
 
-- Масштабируемость для больших серверов
-- Поддержка нескольких экземпляров сервера
-- Расширенные возможности запросов
+- Scalable for large servers
+- Supports multiple server instances
+- Advanced querying capabilities
 
-**Конфигурация:**
+**Configuration:**
 
 ```yaml
 storage: MYSQL
@@ -426,19 +426,19 @@ database:
   password: your_password
 ```
 
-### База данных MariaDB
+### MariaDB Database
 
-Нативная поддержка MariaDB с оптимизированной обработкой соединений.
+Native support for MariaDB with optimized connection handling.
 
-**Преимущества:**
+**Advantages:**
 
-- Совместимость с функциями MariaDB
-- Высокая производительность
-- Надежность корпоративного уровня
-- Оптимизированное подключение с правильными параметрами
-- Автоматическая проверка и добавление колонок для обратной совместимости
+- Compatibility with MariaDB features
+- High performance
+- Enterprise-grade reliability
+- Optimized connection with proper parameters
+- Automatic schema validation for backwards compatibility
 
-**Конфигурация:**
+**Configuration:**
 
 ```yaml
 storage: MARIADB
@@ -456,34 +456,34 @@ database:
     max-lifetime: 1800000
 ```
 
-## Совместимость
+## Compatibility
 
-### Поддерживаемое серверное ПО
+### Supported Server Software
 
-- **Spigot** - Полная совместимость
-- **Purpur** - Полная совместимость
-- **Любой сервер на основе Bukkit** - Совместим со стандартным API Bukkit
+- **Spigot** - Full compatibility
+- **Purpur** - Full compatibility
+- **Any Bukkit-based server** - Compatible with standard Bukkit API
 
-### Версии Minecraft
+### Minecraft Versions
 
-- **1.21.x** - Полностью поддерживается
-- Будущие версии - Должны работать с API версии 1.20+
+- **1.21.x** - Fully supported
+- Future versions - Should work with 1.20+ API
 
-### Требования к Java
+### Java Requirements
 
-- **Java 17** - Минимальная требуемая версия
-- **Java 21** - Рекомендуется для оптимальной производительности
+- **Java 17** - Minimum required version
+- **Java 21** - Recommended for optimal performance
 
-### Требования к базе данных (если используется MySQL/MariaDB)
+### Database Requirements (if using MySQL/MariaDB)
 
 - **MySQL 8.0+**
 - **MariaDB 10.3+**
-- База данных должна поддерживать кодировку UTF-8
+- Database must support UTF-8 encoding
 
 ---
 
-## Поддержка и документация
+## Support and Documentation
 
-- **Автор:** Math_Tereegor
-- **Помощь и поддержка:** MISQZY и 6oJIeH
-- **Версия плагина:** 3.0.6
+- **Author:** Math_Tereegor (ava ex666)
+- **Help and Support:** MISQZY and 6oJIeH
+- **Plugin Version:** 3.1.0
