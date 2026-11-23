@@ -1,4 +1,4 @@
-# NewPlayerPanel v3.1.0
+# NewPlayerPanel v4.0.0
 
 ## Features
 
@@ -456,29 +456,15 @@ database:
     max-lifetime: 1800000
 ```
 
-## Compatibility
+## Compatibility and build
 
-### Supported Server Software
+Targets Spigot and Paper 26.3. Build with JDK 25 and Maven 3.9.x from the project root
 
-- **Spigot** - Full compatibility
-- **Purpur** - Full compatibility
-- **Any Bukkit-based server** - Compatible with standard Bukkit API
+```sh
+mvn clean package
+```
 
-### Minecraft Versions
-
-- **1.21.x** - Fully supported
-- Future versions - Should work with 1.20+ API
-
-### Java Requirements
-
-- **Java 17** - Minimum required version
-- **Java 21** - Recommended for optimal performance
-
-### Database Requirements (if using MySQL/MariaDB)
-
-- **MySQL 8.0+**
-- **MariaDB 10.3+**
-- Database must support UTF-8 encoding
+Install `target/newplayerpanel-4.0.0.jar` in the server’s `plugins/` directory. Run the server with Java 25.
 
 ---
 
@@ -486,4 +472,4 @@ database:
 
 - **Author:** Math_Tereegor (ava ex666)
 - **Help and Support:** MISQZY and 6oJIeH
-- **Plugin Version:** 3.1.0
+- **Plugin Version:** 4.0.0

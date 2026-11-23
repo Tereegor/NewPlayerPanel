@@ -193,7 +193,7 @@ public class SpawnProtectListener implements Listener {
         
         if (zone.isExplosionsEnabled()) {
             if (entity instanceof TNTPrimed || entity instanceof EnderCrystal || 
-                entity.getType() == EntityType.MINECART_TNT) {
+                entity.getType() == EntityType.TNT_MINECART) {
                 event.setCancelled(true);
             }
         }

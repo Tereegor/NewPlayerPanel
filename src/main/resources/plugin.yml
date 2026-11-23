@@ -1,6 +1,6 @@
-api-version: '1.20'
+api-version: '26.3'
 name: NewPlayerPanel
-version: 3.1.0
+version: '${project.version}'
 main: newplayerpanel.NewPlayerPanel
 author: Math_Tereegor
 description: Admin panel plugin for player management
@@ -41,7 +41,7 @@ commands:
     permission: newplayerpanel.restrictions.view
     permission-message: You don't have permission to use this command!
   spawnprotect:
-    description: Spawn protection info, playtime; admins: list, add, remove, reload
+    description: "Spawn protection info, playtime; admins: list, add, remove, reload"
     usage: |
       /spawnprotect info - module info
       /spawnprotect playtime [player] - your playtime (admins: any player)
